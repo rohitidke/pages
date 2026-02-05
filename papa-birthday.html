@@ -4,6 +4,12 @@
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     <title>पप्पांना वाढदिवसाच्या शुभेच्छा</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Mukta:wght@400;600;700&family=Noto+Serif+Devanagari:wght@600;700&display=swap"
+      rel="stylesheet"
+    />
     <style>
       :root {
         --bg1: #fff3d9;
@@ -11,6 +17,7 @@
         --ink: #3a2a1f;
         --accent: #ff6f61;
         --accent-2: #ffb703;
+        --shadow: rgba(0, 0, 0, 0.14);
       }
 
       * {
@@ -20,7 +27,7 @@
       body {
         margin: 0;
         min-height: 100vh;
-        font-family: "Segoe UI", "Noto Sans Devanagari", system-ui, -apple-system, sans-serif;
+        font-family: "Mukta", "Noto Sans Devanagari", sans-serif;
         color: var(--ink);
         background: radial-gradient(1200px 700px at 10% 10%, var(--bg2), transparent),
           radial-gradient(900px 600px at 90% 0%, #e6f7ff, transparent),
@@ -31,42 +38,52 @@
       }
 
       .card {
-        width: min(560px, 92vw);
+        width: min(680px, 94vw);
         background: #ffffffcc;
-        border-radius: 24px;
-        padding: 28px 24px 30px;
-        box-shadow: 0 20px 60px rgba(0, 0, 0, 0.12);
+        border-radius: 28px;
+        padding: 22px 20px 30px;
+        box-shadow: 0 24px 70px var(--shadow);
         text-align: center;
         position: relative;
         overflow: hidden;
+        backdrop-filter: blur(6px);
       }
 
       .card::before,
       .card::after {
         content: "";
         position: absolute;
-        width: 120px;
-        height: 120px;
+        width: 160px;
+        height: 160px;
         border-radius: 50%;
-        background: rgba(255, 183, 3, 0.35);
+        background: rgba(255, 183, 3, 0.28);
         filter: blur(2px);
       }
 
       .card::before {
-        top: -40px;
+        top: -60px;
         left: -40px;
       }
 
       .card::after {
-        bottom: -50px;
+        bottom: -70px;
         right: -30px;
-        background: rgba(255, 111, 97, 0.25);
+        background: rgba(255, 111, 97, 0.2);
+      }
+
+      h1,
+      h2 {
+        font-family: "Noto Serif Devanagari", "Mukta", serif;
+        color: #a33b2c;
+        margin: 10px 0 6px;
       }
 
       h1 {
-        margin: 6px 0 10px;
         font-size: clamp(26px, 5vw, 34px);
-        color: #b3462f;
+      }
+
+      h2 {
+        font-size: clamp(24px, 4.6vw, 30px);
       }
 
       p {
@@ -80,14 +97,6 @@
         font-weight: 700;
       }
 
-      .balloons {
-        display: flex;
-        justify-content: center;
-        gap: 12px;
-        margin: 16px 0 8px;
-        font-size: 30px;
-      }
-
       .tag {
         display: inline-block;
         padding: 6px 14px;
@@ -97,6 +106,14 @@
         font-weight: 600;
         font-size: 14px;
         letter-spacing: 0.3px;
+      }
+
+      .balloons {
+        display: flex;
+        justify-content: center;
+        gap: 12px;
+        margin: 12px 0 8px;
+        font-size: 30px;
       }
 
       .footer {
@@ -115,23 +132,456 @@
           radial-gradient(#8ecae6 1.5px, transparent 2px);
         background-size: 80px 80px, 110px 110px, 140px 140px;
         background-position: 10px 20px, 40px 80px, 70px 40px;
-        opacity: 0.35;
+        opacity: 0.28;
+      }
+
+      .stage {
+        position: relative;
+        z-index: 1;
+        transition: opacity 0.45s ease, transform 0.45s ease;
+      }
+
+      .stage.hidden {
+        opacity: 0;
+        transform: translateY(-10px) scale(0.98);
+        pointer-events: none;
+      }
+
+      .cake-wrap {
+        margin: 8px auto 4px;
+        width: min(440px, 88vw);
+      }
+
+      .cake-area {
+        position: relative;
+        width: 100%;
+      }
+
+      .cake-graphic {
+        position: relative;
+        width: 100%;
+        max-width: 440px;
+        margin: 0 auto;
+      }
+
+      .cake-graphic svg {
+        display: block;
+        width: 100%;
+        height: auto;
+      }
+
+      .cut-gap {
+        opacity: 0;
+        transition: opacity 0.3s ease;
+      }
+
+      .cut-gap.show {
+        opacity: 1;
+      }
+
+      .knife {
+        position: absolute;
+        right: -18px;
+        top: 58%;
+        width: 170px;
+        height: 40px;
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        flex-direction: row-reverse;
+        cursor: grab;
+        touch-action: none;
+        user-select: none;
+        z-index: 6;
+        filter: drop-shadow(0 6px 8px rgba(0, 0, 0, 0.2));
+        transform: translate(0px, 0px) rotate(45deg);
+      }
+
+      .knife.is-dragging {
+        cursor: grabbing;
+      }
+
+      .knife .handle {
+        width: 42px;
+        height: 20px;
+        background: linear-gradient(180deg, #7a4b2a, #5d351c);
+        border-radius: 6px 10px 10px 6px;
+        position: relative;
+      }
+
+      .knife .handle::after {
+        content: "";
+        position: absolute;
+        inset: 3px 6px;
+        border-radius: 6px;
+        background: linear-gradient(180deg, rgba(255, 235, 210, 0.55), transparent);
+      }
+
+      .knife .handle::before {
+        content: "";
+        position: absolute;
+        left: -6px;
+        top: 2px;
+        width: 6px;
+        height: 16px;
+        background: linear-gradient(180deg, #d1d5db, #9ca3af);
+        border-radius: 4px 0 0 4px;
+      }
+
+      .knife .blade {
+        position: relative;
+        width: 110px;
+        height: 12px;
+        background: linear-gradient(90deg, #f8fafc, #cbd5e1);
+        border-radius: 2px 10px 10px 2px;
+        box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.7), inset 0 -1px 0 rgba(0, 0, 0, 0.12);
+      }
+
+      .knife .blade::before {
+        content: "";
+        position: absolute;
+        left: -14px;
+        top: 0;
+        width: 14px;
+        height: 12px;
+        background: linear-gradient(90deg, #f8fafc, #e2e8f0);
+        clip-path: polygon(0 50%, 100% 0, 100% 100%);
+      }
+
+      .knife .blade::after {
+        content: "";
+        position: absolute;
+        inset: 2px 10px 6px 12px;
+        border-radius: 8px;
+        background: rgba(255, 255, 255, 0.6);
+      }
+
+      .hint {
+        font-size: 14px;
+        color: #7a5c4e;
+        margin: 8px 0 10px;
+      }
+
+      .cta {
+        display: inline-block;
+        margin-top: 2px;
+        font-size: 14px;
+        background: #fff0e6;
+        color: #7a3b2a;
+        padding: 6px 12px;
+        border-radius: 999px;
+        font-weight: 600;
+      }
+
+      .final-message {
+        display: none;
+        min-height: 360px;
+        padding: 12px 10px 4px;
+        position: relative;
+        z-index: 2;
+      }
+
+      .final-message.show {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        animation: fadeIn 0.6s ease-out;
+      }
+
+      .final-inner {
+        background: #fffaf3;
+        border-radius: 22px;
+        padding: 22px 18px 20px;
+        box-shadow: 0 18px 40px rgba(0, 0, 0, 0.14);
+      }
+
+      @keyframes fadeIn {
+        from {
+          transform: translateY(10px);
+          opacity: 0;
+        }
+        to {
+          transform: translateY(0);
+          opacity: 1;
+        }
+      }
+
+      .confetti-canvas {
+        position: absolute;
+        inset: 0;
+        width: 100%;
+        height: 100%;
+        pointer-events: none;
+        z-index: 10;
+      }
+
+      svg .flame {
+        transform-box: fill-box;
+        transform-origin: center;
+        animation: flicker 1.3s infinite alternate;
+      }
+
+      svg .flame.delay {
+        animation-delay: 0.4s;
+      }
+
+      @keyframes flicker {
+        0% {
+          transform: scale(0.9);
+          opacity: 0.85;
+        }
+        100% {
+          transform: scale(1.08);
+          opacity: 1;
+        }
+      }
+
+      @media (max-width: 480px) {
+        .card {
+          padding: 18px 16px 26px;
+        }
+
+        .knife {
+          width: 150px;
+        }
       }
     </style>
   </head>
   <body>
-    <main class="card" role="main">
-      <div class="sparkles" aria-hidden="true"></div>
-      <span class="tag">आमच्या घरचा सुपरहिरो</span>
-      <div class="balloons" aria-hidden="true">🎈🎉🎂🎈</div>
-      <h1>पप्पा, वाढदिवसाच्या हार्दिक शुभेच्छा!</h1>
-      <p class="big">तुमचं प्रेम, मार्गदर्शन आणि आधार यासाठी मनापासून धन्यवाद.</p>
-      <p>
-        तुमचं हसणं आमचं बळ आहे. तुमच्या आयुष्यात आनंद, आरोग्य आणि यश
-        नेहमीच भरभरून राहो.
-      </p>
-      <p>आजचा दिवस तुमच्यासारखाच खास आणि सुंदर असो!</p>
-      <div class="footer">भरभरून प्रेमाने — तुमचं कुटुंब</div>
-    </main>
+    <div id="app">
+      <main class="card" role="main">
+        <div class="sparkles" aria-hidden="true"></div>
+
+        <section class="stage" :class="{ hidden: stageHidden }" v-if="!stageGone">
+          <span class="tag">आमच्या घरचा सुपरहिरो</span>
+          <div class="balloons" aria-hidden="true">🎈🎉🎂🎈</div>
+          <h1>पप्पा, वाढदिवसाच्या हार्दिक शुभेच्छा!</h1>
+
+          <div class="cake-wrap">
+            <div class="cake-area">
+              <div class="cake-graphic" ref="cakeBase">
+                <svg viewBox="0 0 400 280" aria-label="Birthday cake">
+                  <defs>
+                    <linearGradient id="cakeGrad" x1="0" x2="0" y1="0" y2="1">
+                      <stop offset="0%" stop-color="#f9d7b8" />
+                      <stop offset="100%" stop-color="#e79a66" />
+                    </linearGradient>
+                    <linearGradient id="cakeGrad2" x1="0" x2="0" y1="0" y2="1">
+                      <stop offset="0%" stop-color="#fbe1cc" />
+                      <stop offset="100%" stop-color="#f1b184" />
+                    </linearGradient>
+                    <linearGradient id="icingGrad" x1="0" x2="0" y1="0" y2="1">
+                      <stop offset="0%" stop-color="#fffaf0" />
+                      <stop offset="100%" stop-color="#f6ddc5" />
+                    </linearGradient>
+                    <linearGradient id="gapGrad" x1="0" x2="0" y1="0" y2="1">
+                      <stop offset="0%" stop-color="#d08f6a" />
+                      <stop offset="100%" stop-color="#b87451" />
+                    </linearGradient>
+                    <linearGradient id="gapTopGrad" x1="0" x2="0" y1="0" y2="1">
+                      <stop offset="0%" stop-color="#e7b690" />
+                      <stop offset="100%" stop-color="#c8825b" />
+                    </linearGradient>
+                    <filter id="shadow" x="-20%" y="-20%" width="140%" height="140%">
+                      <feDropShadow dx="0" dy="14" stdDeviation="10" flood-color="#000" flood-opacity="0.18" />
+                    </filter>
+                  </defs>
+
+                  <ellipse cx="200" cy="238" rx="150" ry="18" fill="#f2f2f2" />
+                  <ellipse cx="200" cy="238" rx="130" ry="12" fill="#ffffff" opacity="0.8" />
+
+                  <g filter="url(#shadow)">
+                    <rect x="60" y="120" width="280" height="100" rx="26" fill="url(#cakeGrad)" />
+                    <path
+                      d="M70 120 H330 L330 145 Q318 155 306 145 Q294 135 280 145 Q268 155 256 145 Q244 135 232 145 Q220 155 206 145 Q194 135 182 145 Q170 155 158 145 Q146 135 134 145 Q122 155 110 145 Q96 136 70 145 Z"
+                      fill="url(#icingGrad)"
+                    />
+                  </g>
+
+                  <g filter="url(#shadow)">
+                    <rect x="110" y="60" width="180" height="70" rx="20" fill="url(#cakeGrad2)" />
+                    <path
+                      d="M120 60 H280 L280 80 Q270 90 260 80 Q250 70 240 80 Q230 90 220 80 Q210 70 200 80 Q190 90 180 80 Q170 70 160 80 Q150 90 140 80 Q130 70 120 80 Z"
+                      fill="url(#icingGrad)"
+                    />
+                  </g>
+
+                  <g>
+                    <circle cx="140" cy="102" r="4" fill="#ff8fab" />
+                    <circle cx="165" cy="95" r="4" fill="#ffd166" />
+                    <circle cx="190" cy="103" r="4" fill="#8ecae6" />
+                    <circle cx="215" cy="94" r="4" fill="#a3e635" />
+                    <circle cx="238" cy="104" r="4" fill="#ff8fab" />
+                  </g>
+
+                  <g class="cut-gap" :class="{ show: cutShown }">
+                    <path
+                      d="M175 122 Q200 116 225 122 L248 220 L152 220 Z"
+                      fill="url(#gapGrad)"
+                    />
+                    <path
+                      d="M183 130 Q200 124 217 130 L236 214 L164 214 Z"
+                      fill="rgba(255,255,255,0.08)"
+                    />
+                    <path
+                      d="M178 122 Q200 116 222 122"
+                      stroke="rgba(255,255,255,0.45)"
+                      stroke-width="2"
+                      stroke-linecap="round"
+                    />
+                  </g>
+
+                  <g>
+                    <rect x="176" y="18" width="30" height="60" rx="8" fill="#ffd1b3" />
+                    <rect x="210" y="18" width="30" height="60" rx="8" fill="#ffd1b3" />
+                    <text x="191" y="58" font-size="28" font-weight="700" fill="#b84a36" text-anchor="middle">6</text>
+                    <text x="225" y="58" font-size="28" font-weight="700" fill="#b84a36" text-anchor="middle">1</text>
+                    <path class="flame" d="M190 8 C184 18 190 22 190 28 C190 22 198 18 190 8 Z" fill="#ffb703" />
+                    <path class="flame delay" d="M224 8 C218 18 224 22 224 28 C224 22 232 18 224 8 Z" fill="#ffb703" />
+                  </g>
+
+                </svg>
+              </div>
+
+              <div class="knife" ref="knife" :class="{ 'is-dragging': dragging }">
+                <span class="handle"></span>
+                <span class="blade"></span>
+              </div>
+            </div>
+          </div>
+
+          <div class="hint">चाकू ओढून केक कापा आणि पप्पांना केक कापायला मदत करा.</div>
+          <div class="cta">{{ statusText }}</div>
+        </section>
+
+        <section class="final-message" :class="{ show: revealed }">
+          <div class="final-inner">
+            <h2>पप्पा, वाढदिवसाच्या हार्दिक शुभेच्छा!</h2>
+            <p class="big">इथे तुमचा खास संदेश लिहा…</p>
+            <p>पप्पा, तुमच्यासाठी माझ्या मनातलं सगळं प्रेम या शब्दांत.</p>
+            <div class="footer">भरभरून प्रेमाने — तुमचं कुटुंब</div>
+          </div>
+        </section>
+
+        <canvas class="confetti-canvas" ref="confettiCanvas"></canvas>
+      </main>
+    </div>
+
+    <script src="https://unpkg.com/vue@3/dist/vue.global.prod.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/interactjs/dist/interact.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js"></script>
+    <script>
+      const { createApp } = Vue;
+
+      createApp({
+        data() {
+          return {
+            statusText: "स्लाइस करा ✨",
+            revealed: false,
+            stageHidden: false,
+            stageGone: false,
+            dragging: false,
+            isCut: false,
+            cutShown: false,
+          };
+        },
+        mounted() {
+          const knife = this.$refs.knife;
+          const blade = knife.querySelector(".blade");
+          const cakeBase = this.$refs.cakeBase;
+          const confettiCanvas = this.$refs.confettiCanvas;
+          const confettiBurst = confetti.create(confettiCanvas, { resize: true, useWorker: true });
+
+          let position = { x: 0, y: 0 };
+          let cutStartX = null;
+          let cutValid = false;
+          const baseAngle = 45;
+
+          const resetKnife = () => {
+            position = { x: 0, y: 0 };
+            knife.style.transform = `translate(0px, 0px) rotate(${baseAngle}deg)`;
+            this.cutShown = false;
+            cutStartX = null;
+            cutValid = false;
+          };
+
+          const updateCut = (bladeRect) => {
+            const cakeRect = cakeBase.getBoundingClientRect();
+            const cakeLeft = cakeRect.left + cakeRect.width * 0.1;
+            const cakeRight = cakeRect.right - cakeRect.width * 0.08;
+            const cakeTop = cakeRect.top + cakeRect.height * 0.38;
+            const cakeBottom = cakeRect.bottom - cakeRect.height * 0.18;
+
+            const overlapX = Math.max(0, Math.min(bladeRect.right, cakeRight) - Math.max(bladeRect.left, cakeLeft));
+            const overlapY = Math.max(0, Math.min(bladeRect.bottom, cakeBottom) - Math.max(bladeRect.top, cakeTop));
+            const insideCake = overlapX >= 20 && overlapY >= 10;
+
+            if (insideCake) {
+              if (cutStartX === null) {
+                cutStartX = bladeRect.left;
+                cutValid = true;
+              }
+
+              if (cutValid) {
+                const travel = Math.abs(cutStartX - bladeRect.left);
+                if (travel > 90) {
+                  this.completeCut(confettiBurst);
+                }
+              }
+            }
+          };
+
+          interact(knife).draggable({
+            listeners: {
+              start: () => {
+                if (this.isCut) return;
+                this.dragging = true;
+                cutStartX = null;
+                cutValid = false;
+              },
+              move: (event) => {
+                if (this.isCut) return;
+                position.x += event.dx;
+                position.y += event.dy;
+
+                const rotation = baseAngle + position.x * 0.05;
+                knife.style.transform = `translate(${position.x}px, ${position.y}px) rotate(${rotation}deg)`;
+
+                const bladeRect = blade.getBoundingClientRect();
+                updateCut(bladeRect);
+              },
+              end: () => {
+                this.dragging = false;
+                if (!this.isCut) {
+                  resetKnife();
+                }
+              },
+            },
+          });
+        },
+        methods: {
+          completeCut(confettiBurst) {
+            if (this.isCut) return;
+            this.isCut = true;
+            this.statusText = "वाढदिवसाचा जल्लोष 🎊";
+            this.cutShown = true;
+
+            setTimeout(() => {
+              confettiBurst({ particleCount: 140, spread: 80, origin: { y: 0.6 } });
+              confettiBurst({ particleCount: 90, spread: 110, origin: { y: 0.5 }, scalar: 0.9 });
+            }, 500);
+
+            setTimeout(() => {
+              this.stageHidden = true;
+            }, 1000);
+
+            setTimeout(() => {
+              this.stageGone = true;
+              this.revealed = true;
+            }, 1500);
+          },
+        },
+      }).mount("#app");
+    </script>
   </body>
 </html>
