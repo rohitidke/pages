@@ -1,0 +1,137 @@
+<!doctype html>
+<html lang="mr">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>पप्पांना वाढदिवसाच्या शुभेच्छा</title>
+    <style>
+      :root {
+        --bg1: #fff3d9;
+        --bg2: #ffe4f2;
+        --ink: #3a2a1f;
+        --accent: #ff6f61;
+        --accent-2: #ffb703;
+      }
+
+      * {
+        box-sizing: border-box;
+      }
+
+      body {
+        margin: 0;
+        min-height: 100vh;
+        font-family: "Segoe UI", "Noto Sans Devanagari", system-ui, -apple-system, sans-serif;
+        color: var(--ink);
+        background: radial-gradient(1200px 700px at 10% 10%, var(--bg2), transparent),
+          radial-gradient(900px 600px at 90% 0%, #e6f7ff, transparent),
+          linear-gradient(135deg, var(--bg1), #fff);
+        display: grid;
+        place-items: center;
+        padding: 24px;
+      }
+
+      .card {
+        width: min(560px, 92vw);
+        background: #ffffffcc;
+        border-radius: 24px;
+        padding: 28px 24px 30px;
+        box-shadow: 0 20px 60px rgba(0, 0, 0, 0.12);
+        text-align: center;
+        position: relative;
+        overflow: hidden;
+      }
+
+      .card::before,
+      .card::after {
+        content: "";
+        position: absolute;
+        width: 120px;
+        height: 120px;
+        border-radius: 50%;
+        background: rgba(255, 183, 3, 0.35);
+        filter: blur(2px);
+      }
+
+      .card::before {
+        top: -40px;
+        left: -40px;
+      }
+
+      .card::after {
+        bottom: -50px;
+        right: -30px;
+        background: rgba(255, 111, 97, 0.25);
+      }
+
+      h1 {
+        margin: 6px 0 10px;
+        font-size: clamp(26px, 5vw, 34px);
+        color: #b3462f;
+      }
+
+      p {
+        margin: 10px 0;
+        font-size: clamp(16px, 3.8vw, 18px);
+        line-height: 1.6;
+      }
+
+      .big {
+        font-size: clamp(20px, 4.6vw, 24px);
+        font-weight: 700;
+      }
+
+      .balloons {
+        display: flex;
+        justify-content: center;
+        gap: 12px;
+        margin: 16px 0 8px;
+        font-size: 30px;
+      }
+
+      .tag {
+        display: inline-block;
+        padding: 6px 14px;
+        border-radius: 999px;
+        background: #fff0e6;
+        color: #8a3b2a;
+        font-weight: 600;
+        font-size: 14px;
+        letter-spacing: 0.3px;
+      }
+
+      .footer {
+        margin-top: 16px;
+        font-size: 14px;
+        color: #6e5a4d;
+      }
+
+      .sparkles {
+        position: absolute;
+        inset: 0;
+        pointer-events: none;
+        background-image:
+          radial-gradient(#ffd166 1.5px, transparent 2px),
+          radial-gradient(#ff6f61 1.5px, transparent 2px),
+          radial-gradient(#8ecae6 1.5px, transparent 2px);
+        background-size: 80px 80px, 110px 110px, 140px 140px;
+        background-position: 10px 20px, 40px 80px, 70px 40px;
+        opacity: 0.35;
+      }
+    </style>
+  </head>
+  <body>
+    <main class="card" role="main">
+      <div class="sparkles" aria-hidden="true"></div>
+      <span class="tag">आमच्या घरचा सुपरहिरो</span>
+      <div class="balloons" aria-hidden="true">🎈🎉🎂🎈</div>
+      <h1>पप्पा, वाढदिवसाच्या हार्दिक शुभेच्छा!</h1>
+      <p class="big">तुमचं प्रेम, मार्गदर्शन आणि आधार यासाठी मनापासून धन्यवाद.</p>
+      <p>
+        तुमचं हसणं आमचं बळ आहे. तुमच्या आयुष्यात आनंद, आरोग्य आणि यश
+        नेहमीच भरभरून राहो.
+      </p>
+      <p>आजचा दिवस तुमच्यासारखाच खास आणि सुंदर असो!</p>
+      <div class="footer">भरभरून प्रेमाने — तुमचं कुटुंब</div>
+    </main>
+  </body>
+</html>
