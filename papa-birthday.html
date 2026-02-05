@@ -32,13 +32,21 @@
         background: radial-gradient(1200px 700px at 10% 10%, var(--bg2), transparent),
           radial-gradient(900px 600px at 90% 0%, #e6f7ff, transparent),
           linear-gradient(135deg, var(--bg1), #fff);
-        display: grid;
-        place-items: center;
-        padding: 24px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        padding: 12px;
+      }
+
+      #app {
+        width: 100%;
+        max-width: 680px;
+        display: flex;
+        justify-content: center;
       }
 
       .card {
-        width: min(680px, 94vw);
+        width: min(680px, 100%);
         background: #ffffffcc;
         border-radius: 28px;
         padding: 22px 20px 30px;
@@ -353,7 +361,7 @@
         <div class="sparkles" aria-hidden="true"></div>
 
         <section class="stage" :class="{ hidden: stageHidden }" v-if="!stageGone">
-          <span class="tag">आमच्या घरचा सुपरहिरो</span>
+          <span class="tag">आपल्या घरचे आधारस्तंभ</span>
           <div class="balloons" aria-hidden="true">🎈🎉🎂🎈</div>
           <h1>पप्पा, वाढदिवसाच्या हार्दिक शुभेच्छा!</h1>
 
@@ -450,7 +458,7 @@
             </div>
           </div>
 
-          <div class="hint">चाकू ओढून केक कापा आणि पप्पांना केक कापायला मदत करा.</div>
+          <div class="hint">चाकू पकडून केकवर न्या आणि केक कापा.</div>
           <div class="cta">{{ statusText }}</div>
         </section>
 
@@ -476,7 +484,7 @@
       createApp({
         data() {
           return {
-            statusText: "स्लाइस करा ✨",
+            statusText: "आजचा खास क्षण ✨",
             revealed: false,
             stageHidden: false,
             stageGone: false,
