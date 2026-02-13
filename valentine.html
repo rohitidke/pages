@@ -1,0 +1,1657 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no" />
+    <title>Prove You're My Valentine</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600;700;800&display=swap"
+      rel="stylesheet"
+    />
+    <style>
+      :root {
+        --bg-primary: #1a1a2e;
+        --bg-secondary: #16213e;
+        --pink: #ff2e63;
+        --pink-light: #ff6b8a;
+        --pink-glow: rgba(255, 46, 99, 0.3);
+        --light-pink: #ffd3e0;
+        --white: #ffffff;
+        --gold: #ffd700;
+        --gold-dark: #b8960c;
+        --text: #ffffff;
+        --text-dark: #333;
+        --card-bg: #ffffff;
+        --captcha-blue: #4285f4;
+        --captcha-header: #4285f4;
+        --tinder-pink: #fe3c72;
+        --success-green: #4caf50;
+      }
+
+      * {
+        box-sizing: border-box;
+        margin: 0;
+        padding: 0;
+      }
+
+      body {
+        font-family: "Poppins", sans-serif;
+        background: var(--bg-primary);
+        color: var(--text);
+        min-height: 100vh;
+        min-height: 100dvh;
+        overflow-x: hidden;
+      }
+
+      #app {
+        min-height: 100vh;
+        min-height: 100dvh;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        padding: 16px;
+      }
+
+      /* ───── Page Transitions ───── */
+      .page-enter {
+        animation: pageIn 0.5s ease forwards;
+      }
+      .page-leave {
+        animation: pageOut 0.35s ease forwards;
+      }
+      @keyframes pageIn {
+        from { opacity: 0; transform: translateY(30px) scale(0.97); }
+        to { opacity: 1; transform: translateY(0) scale(1); }
+      }
+      @keyframes pageOut {
+        from { opacity: 1; transform: translateY(0) scale(1); }
+        to { opacity: 0; transform: translateY(-20px) scale(0.97); }
+      }
+
+      .page {
+        width: 100%;
+        max-width: 420px;
+      }
+
+      /* ───── PAGE 1: CAPTCHA ───── */
+      .captcha-box {
+        background: var(--card-bg);
+        border-radius: 8px;
+        overflow: hidden;
+        box-shadow: 0 4px 24px rgba(0,0,0,0.4);
+      }
+      .captcha-header {
+        background: var(--captcha-blue);
+        color: white;
+        padding: 16px;
+        font-size: 14px;
+        line-height: 1.5;
+      }
+      .captcha-header .captcha-title {
+        font-size: 15px;
+        font-weight: 600;
+        margin-bottom: 2px;
+      }
+      .captcha-header .captcha-subtitle {
+        font-size: 13px;
+        opacity: 0.9;
+      }
+      .captcha-grid {
+        display: grid;
+        grid-template-columns: repeat(3, 1fr);
+        gap: 3px;
+        padding: 3px;
+        background: #e0e0e0;
+      }
+      .captcha-cell {
+        aspect-ratio: 1;
+        background: white;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: clamp(12px, 3.5vw, 15px);
+        font-weight: 600;
+        color: var(--text-dark);
+        cursor: pointer;
+        position: relative;
+        transition: all 0.2s ease;
+        user-select: none;
+        -webkit-tap-highlight-color: transparent;
+      }
+      .captcha-cell:active {
+        transform: scale(0.95);
+      }
+      .captcha-cell.selected {
+        background: #e3f2fd;
+        border: 3px solid var(--captcha-blue);
+      }
+      .captcha-cell.selected::after {
+        content: "✓";
+        position: absolute;
+        top: 4px;
+        right: 6px;
+        font-size: 14px;
+        color: var(--captcha-blue);
+        font-weight: 700;
+      }
+      .captcha-footer {
+        padding: 16px;
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        background: #f9f9f9;
+        border-top: 1px solid #e0e0e0;
+      }
+      .captcha-footer .captcha-logo {
+        font-size: 11px;
+        color: #999;
+      }
+      .captcha-footer .captcha-logo span {
+        font-weight: 700;
+        color: #555;
+        font-size: 13px;
+      }
+      .btn-verify {
+        background: var(--captcha-blue);
+        color: white;
+        border: none;
+        padding: 10px 28px;
+        border-radius: 4px;
+        font-size: 14px;
+        font-weight: 600;
+        cursor: pointer;
+        font-family: inherit;
+        transition: background 0.2s;
+      }
+      .btn-verify:active {
+        background: #3367d6;
+      }
+      .captcha-error {
+        color: #d32f2f;
+        font-size: 13px;
+        padding: 8px 16px 0;
+        text-align: center;
+        background: #f9f9f9;
+      }
+      .captcha-success {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        padding: 40px 16px;
+        background: #f9f9f9;
+      }
+      .captcha-success .checkmark {
+        width: 60px;
+        height: 60px;
+        border-radius: 50%;
+        background: var(--success-green);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 30px;
+        color: white;
+        margin-bottom: 12px;
+        animation: popIn 0.4s ease;
+      }
+      .captcha-success p {
+        color: var(--success-green);
+        font-weight: 600;
+        font-size: 16px;
+      }
+      @keyframes popIn {
+        0% { transform: scale(0); }
+        70% { transform: scale(1.2); }
+        100% { transform: scale(1); }
+      }
+      @keyframes shake {
+        0%, 100% { transform: translateX(0); }
+        20% { transform: translateX(-8px); }
+        40% { transform: translateX(8px); }
+        60% { transform: translateX(-6px); }
+        80% { transform: translateX(6px); }
+      }
+      .shake {
+        animation: shake 0.4s ease;
+      }
+
+      /* ───── PAGE 2: TINDER ───── */
+      .tinder-page {
+        width: 100%;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+      }
+      .tinder-top-bar {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        margin-bottom: 16px;
+        align-self: flex-start;
+      }
+      .tinder-flame {
+        width: 32px;
+        height: 32px;
+        background: linear-gradient(to top, #fe3c72, #ff6b4a);
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 18px;
+      }
+      .tinder-top-bar span {
+        font-size: 22px;
+        font-weight: 700;
+        background: linear-gradient(135deg, #fe3c72, #ff6b4a);
+        -webkit-background-clip: text;
+        -webkit-text-fill-color: transparent;
+      }
+      .tinder-card-wrapper {
+        position: relative;
+        width: 100%;
+        max-width: 380px;
+        touch-action: none;
+      }
+      .tinder-card {
+        background: var(--card-bg);
+        border-radius: 16px;
+        overflow: hidden;
+        box-shadow: 0 8px 40px rgba(0,0,0,0.3);
+        position: relative;
+        touch-action: none;
+        will-change: transform;
+      }
+      .tinder-photo {
+        width: 100%;
+        aspect-ratio: 3/3.5;
+        background: url('rohit.jpg') center/cover no-repeat;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        position: relative;
+      }
+      .tinder-photo .photo-overlay {
+        position: absolute;
+        bottom: 0;
+        left: 0;
+        right: 0;
+        padding: 20px 16px 12px;
+        background: linear-gradient(transparent, rgba(0,0,0,0.7));
+        color: white;
+      }
+      .tinder-photo .photo-overlay h2 {
+        font-size: 26px;
+        font-weight: 700;
+        margin-bottom: 2px;
+      }
+      .tinder-photo .photo-overlay h2 span {
+        font-weight: 400;
+        font-size: 22px;
+      }
+      .tinder-photo .photo-overlay .distance {
+        font-size: 13px;
+        opacity: 0.85;
+      }
+      .tinder-info {
+        padding: 16px;
+        color: var(--text-dark);
+      }
+      .tinder-info .profession {
+        font-size: 15px;
+        color: #666;
+        margin-bottom: 12px;
+        display: flex;
+        align-items: center;
+        gap: 6px;
+      }
+      .tinder-section {
+        margin-bottom: 12px;
+      }
+      .tinder-section h4 {
+        font-size: 13px;
+        font-weight: 600;
+        color: #999;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+        margin-bottom: 4px;
+      }
+      .tinder-section p {
+        font-size: 14px;
+        line-height: 1.5;
+        color: #444;
+      }
+      .tinder-hobbies {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 6px;
+      }
+      .tinder-hobby {
+        background: #f0f0f0;
+        padding: 4px 12px;
+        border-radius: 20px;
+        font-size: 12px;
+        color: #555;
+      }
+      .tinder-actions {
+        display: flex;
+        justify-content: center;
+        gap: 24px;
+        margin-top: 20px;
+      }
+      .tinder-btn {
+        width: 56px;
+        height: 56px;
+        border-radius: 50%;
+        border: 2px solid;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 24px;
+        cursor: pointer;
+        background: white;
+        box-shadow: 0 2px 12px rgba(0,0,0,0.15);
+      }
+      .tinder-btn.nope { border-color: #fe3c72; }
+      .tinder-btn.like { border-color: #4cd964; }
+      .tinder-swipe-hint {
+        text-align: center;
+        margin-top: 14px;
+        font-size: 13px;
+        color: rgba(255,255,255,0.5);
+      }
+      .tinder-overlay {
+        position: absolute;
+        inset: 0;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        border-radius: 16px;
+        font-size: 18px;
+        font-weight: 700;
+        pointer-events: none;
+        opacity: 0;
+        transition: opacity 0.2s;
+        z-index: 5;
+      }
+      .tinder-overlay.nope-overlay {
+        background: rgba(254, 60, 114, 0.15);
+        color: #fe3c72;
+        border: 3px solid #fe3c72;
+      }
+      .tinder-overlay.like-overlay {
+        background: rgba(76, 217, 100, 0.15);
+        color: #4cd964;
+        border: 3px solid #4cd964;
+      }
+      .tinder-reject-msg {
+        position: absolute;
+        inset: 0;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        background: rgba(0,0,0,0.85);
+        border-radius: 16px;
+        z-index: 10;
+        padding: 20px;
+        text-align: center;
+        animation: popIn 0.3s ease;
+      }
+      .tinder-reject-msg .emoji {
+        font-size: 48px;
+        margin-bottom: 12px;
+      }
+      .tinder-reject-msg p {
+        font-size: 16px;
+        font-weight: 600;
+        color: white;
+        line-height: 1.5;
+      }
+
+      /* ───── PAGE 3: PROPOSAL ───── */
+      .proposal-page {
+        width: 100%;
+        min-height: 80vh;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        text-align: center;
+        position: relative;
+        overflow: hidden;
+      }
+      .proposal-sparkles {
+        position: fixed;
+        inset: 0;
+        pointer-events: none;
+        overflow: hidden;
+      }
+      .sparkle {
+        position: absolute;
+        width: 4px;
+        height: 4px;
+        background: var(--gold);
+        border-radius: 50%;
+        animation: sparkleFloat 3s infinite ease-in-out;
+      }
+      @keyframes sparkleFloat {
+        0%, 100% { opacity: 0; transform: translateY(0) scale(0); }
+        50% { opacity: 1; transform: translateY(-40px) scale(1); }
+      }
+      .proposal-title {
+        font-size: clamp(28px, 7vw, 42px);
+        font-weight: 800;
+        line-height: 1.3;
+        margin-bottom: 8px;
+        background: linear-gradient(135deg, var(--pink), #ff8a9e, var(--gold));
+        -webkit-background-clip: text;
+        -webkit-text-fill-color: transparent;
+      }
+      .proposal-subtitle {
+        font-size: 16px;
+        opacity: 0.7;
+        margin-bottom: 40px;
+      }
+      .proposal-buttons {
+        position: relative;
+        width: 100%;
+        min-height: 200px;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        gap: 16px;
+      }
+      .btn-proposal {
+        padding: 14px 48px;
+        border: none;
+        border-radius: 50px;
+        font-size: 18px;
+        font-weight: 700;
+        font-family: inherit;
+        cursor: pointer;
+        transition: transform 0.15s, box-shadow 0.15s;
+        z-index: 2;
+      }
+      .btn-proposal:active {
+        transform: scale(0.95);
+      }
+      .btn-yes {
+        background: linear-gradient(135deg, var(--pink), #ff6b8a);
+        color: white;
+        box-shadow: 0 4px 20px var(--pink-glow);
+        position: absolute;
+        touch-action: manipulation;
+        transition: left 0.15s ease, top 0.15s ease, transform 0.15s;
+      }
+      .btn-no {
+        background: linear-gradient(135deg, #4cd964, #2ecc71);
+        color: white;
+        box-shadow: 0 4px 20px rgba(76, 217, 100, 0.3);
+        margin-top: 100px;
+      }
+      .proposal-dodge-hint {
+        margin-top: 16px;
+        font-size: 14px;
+        color: var(--gold);
+        opacity: 0;
+        transition: opacity 0.3s;
+      }
+      .proposal-dodge-hint.visible {
+        opacity: 1;
+      }
+      .proposal-result {
+        text-align: center;
+        animation: popIn 0.5s ease;
+      }
+      .proposal-result .result-emoji {
+        font-size: 64px;
+        margin-bottom: 16px;
+      }
+      .proposal-result h2 {
+        font-size: 28px;
+        font-weight: 800;
+        margin-bottom: 8px;
+      }
+      .proposal-result p {
+        font-size: 16px;
+        opacity: 0.8;
+        margin-bottom: 24px;
+      }
+
+      /* ───── PAGE 4: T&C ───── */
+      .tc-page {
+        width: 100%;
+      }
+      .tc-box {
+        background: #fefefe;
+        border-radius: 8px;
+        box-shadow: 0 4px 24px rgba(0,0,0,0.3);
+        overflow: hidden;
+      }
+      .tc-header {
+        background: linear-gradient(135deg, #2c3e50, #34495e);
+        padding: 16px;
+        text-align: center;
+      }
+      .tc-header h2 {
+        font-size: 15px;
+        font-weight: 700;
+        color: white;
+        text-transform: uppercase;
+        letter-spacing: 1px;
+      }
+      .tc-header .tc-date {
+        font-size: 11px;
+        color: rgba(255,255,255,0.6);
+        margin-top: 4px;
+      }
+      .tc-scroll {
+        max-height: 55vh;
+        overflow-y: auto;
+        padding: 20px 16px;
+        color: var(--text-dark);
+        font-size: 14px;
+        line-height: 1.7;
+        -webkit-overflow-scrolling: touch;
+      }
+      .tc-scroll::-webkit-scrollbar {
+        width: 4px;
+      }
+      .tc-scroll::-webkit-scrollbar-thumb {
+        background: #ccc;
+        border-radius: 4px;
+      }
+      .tc-clause {
+        margin-bottom: 16px;
+        padding-left: 8px;
+        border-left: 3px solid var(--pink);
+      }
+      .tc-clause .clause-num {
+        font-weight: 700;
+        color: var(--pink);
+        font-size: 13px;
+      }
+      .tc-footer {
+        padding: 16px;
+        border-top: 1px solid #e0e0e0;
+        background: #f9f9f9;
+      }
+      .tc-scroll-hint {
+        text-align: center;
+        font-size: 12px;
+        color: #999;
+        margin-bottom: 12px;
+      }
+      .tc-agree-row {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        justify-content: center;
+        opacity: 0.3;
+        pointer-events: none;
+        transition: opacity 0.3s;
+      }
+      .tc-agree-row.enabled {
+        opacity: 1;
+        pointer-events: auto;
+      }
+      .tc-agree-row input[type="checkbox"] {
+        width: 20px;
+        height: 20px;
+        accent-color: var(--pink);
+      }
+      .tc-agree-row label {
+        font-size: 14px;
+        font-weight: 600;
+        color: var(--text-dark);
+        cursor: pointer;
+      }
+      .tc-success {
+        text-align: center;
+        padding: 30px 16px;
+        background: #f9f9f9;
+        animation: popIn 0.4s ease;
+      }
+      .tc-success .emoji {
+        font-size: 48px;
+        margin-bottom: 8px;
+      }
+      .tc-success p {
+        font-size: 16px;
+        font-weight: 600;
+        color: var(--text-dark);
+      }
+
+      /* ───── PAGE 5: QUIZ ───── */
+      .quiz-page {
+        width: 100%;
+        text-align: center;
+      }
+      .quiz-intro h2 {
+        font-size: 24px;
+        font-weight: 800;
+        margin-bottom: 8px;
+        background: linear-gradient(135deg, var(--pink), var(--gold));
+        -webkit-background-clip: text;
+        -webkit-text-fill-color: transparent;
+      }
+      .quiz-intro p {
+        font-size: 15px;
+        opacity: 0.7;
+        margin-bottom: 24px;
+      }
+      .quiz-progress {
+        width: 100%;
+        height: 6px;
+        background: rgba(255,255,255,0.15);
+        border-radius: 3px;
+        margin-bottom: 24px;
+        overflow: hidden;
+      }
+      .quiz-progress-bar {
+        height: 100%;
+        background: linear-gradient(90deg, var(--pink), var(--gold));
+        border-radius: 3px;
+        transition: width 0.4s ease;
+      }
+      .quiz-card {
+        background: rgba(255,255,255,0.08);
+        border-radius: 16px;
+        padding: 24px 20px;
+        backdrop-filter: blur(8px);
+        border: 1px solid rgba(255,255,255,0.1);
+      }
+      .quiz-q-num {
+        font-size: 13px;
+        color: var(--pink);
+        font-weight: 600;
+        margin-bottom: 8px;
+      }
+      .quiz-question {
+        font-size: 18px;
+        font-weight: 700;
+        margin-bottom: 20px;
+        line-height: 1.4;
+      }
+      .quiz-options {
+        display: flex;
+        flex-direction: column;
+        gap: 12px;
+      }
+      .quiz-option {
+        padding: 14px 20px;
+        border-radius: 12px;
+        background: rgba(255,255,255,0.06);
+        border: 2px solid rgba(255,255,255,0.15);
+        color: white;
+        font-size: 16px;
+        font-weight: 600;
+        cursor: pointer;
+        font-family: inherit;
+        transition: all 0.2s;
+        -webkit-tap-highlight-color: transparent;
+      }
+      .quiz-option:active {
+        transform: scale(0.97);
+      }
+      .quiz-option.selected-correct {
+        border-color: #4cd964;
+        background: rgba(76, 217, 100, 0.2);
+      }
+      .quiz-option.selected-wrong {
+        border-color: #fe3c72;
+        background: rgba(254, 60, 114, 0.2);
+      }
+      .quiz-feedback {
+        margin-top: 14px;
+        font-size: 14px;
+        font-weight: 600;
+        animation: popIn 0.3s ease;
+      }
+      .quiz-result {
+        animation: popIn 0.4s ease;
+      }
+      .quiz-result .score-circle {
+        width: 120px;
+        height: 120px;
+        border-radius: 50%;
+        background: linear-gradient(135deg, var(--pink), var(--gold));
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        margin: 0 auto 16px;
+        font-size: 36px;
+        font-weight: 800;
+      }
+      .quiz-result h2 {
+        font-size: 20px;
+        font-weight: 700;
+        margin-bottom: 8px;
+      }
+      .quiz-result p {
+        font-size: 15px;
+        opacity: 0.7;
+        margin-bottom: 24px;
+      }
+
+      /* ───── PAGE 6: SCRATCH CARDS ───── */
+      .scratch-page {
+        width: 100%;
+        text-align: center;
+      }
+      .scratch-page h2 {
+        font-size: 24px;
+        font-weight: 800;
+        margin-bottom: 4px;
+        background: linear-gradient(135deg, var(--gold), #ffaa00);
+        -webkit-background-clip: text;
+        -webkit-text-fill-color: transparent;
+      }
+      .scratch-page .scratch-subtitle {
+        font-size: 14px;
+        opacity: 0.6;
+        margin-bottom: 20px;
+      }
+
+      /* Step 1: Pick a card - horizontal row */
+      .scratch-pick-row {
+        display: flex;
+        gap: 12px;
+        justify-content: center;
+      }
+      .scratch-pick-card {
+        flex: 1;
+        max-width: 120px;
+        aspect-ratio: 3/4;
+        border-radius: 14px;
+        background: linear-gradient(135deg, #ffd700, #ffaa00, #ffd700);
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        cursor: pointer;
+        box-shadow: 0 4px 20px rgba(255, 215, 0, 0.3);
+        transition: transform 0.2s, box-shadow 0.2s;
+        -webkit-tap-highlight-color: transparent;
+        position: relative;
+        overflow: hidden;
+      }
+      .scratch-pick-card::before {
+        content: '';
+        position: absolute;
+        inset: 3px;
+        border-radius: 11px;
+        border: 2px dashed rgba(255,255,255,0.4);
+        pointer-events: none;
+      }
+      .scratch-pick-card:active {
+        transform: scale(0.95);
+      }
+      .scratch-pick-card .card-num {
+        font-size: 32px;
+        margin-bottom: 4px;
+      }
+      .scratch-pick-card .card-label {
+        font-size: 12px;
+        font-weight: 600;
+        color: rgba(100, 70, 0, 0.7);
+      }
+
+      /* Step 2: Scratch the chosen card - big centered */
+      .scratch-active-wrapper {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        animation: popIn 0.4s ease;
+      }
+      .scratch-card-big {
+        position: relative;
+        background: var(--card-bg);
+        border-radius: 20px;
+        overflow: hidden;
+        box-shadow: 0 8px 40px rgba(255, 215, 0, 0.3);
+        width: 100%;
+        max-width: 340px;
+        height: 220px;
+      }
+      .scratch-card-big .prize-content {
+        position: absolute;
+        inset: 0;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        padding: 24px;
+        font-size: 18px;
+        font-weight: 700;
+        color: var(--text-dark);
+        text-align: center;
+        line-height: 1.5;
+      }
+      .scratch-card-big canvas {
+        position: absolute;
+        inset: 0;
+        width: 100%;
+        height: 100%;
+        cursor: pointer;
+        touch-action: none;
+      }
+      .scratch-card-big.revealed canvas {
+        opacity: 0;
+        transition: opacity 0.5s;
+        pointer-events: none;
+      }
+      .scratch-card-big .scratch-label {
+        position: absolute;
+        inset: 0;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 16px;
+        font-weight: 700;
+        color: rgba(100, 70, 0, 0.8);
+        pointer-events: none;
+        z-index: 2;
+        text-shadow: 0 1px 2px rgba(255,255,255,0.5);
+      }
+      .scratch-card-big.revealed .scratch-label {
+        display: none;
+      }
+      .scratch-hint {
+        margin-top: 16px;
+        font-size: 13px;
+        opacity: 0.5;
+      }
+      .scratch-final {
+        margin-top: 24px;
+        padding: 20px;
+        background: linear-gradient(135deg, var(--pink), #ff6b8a);
+        border-radius: 16px;
+        animation: popIn 0.5s ease;
+      }
+      .scratch-final .emoji { font-size: 36px; margin-bottom: 8px; }
+      .scratch-final p {
+        font-size: 16px;
+        font-weight: 700;
+        line-height: 1.5;
+      }
+
+      /* ───── Shared ───── */
+      .btn-next {
+        display: inline-block;
+        padding: 14px 40px;
+        background: linear-gradient(135deg, var(--pink), #ff6b8a);
+        color: white;
+        border: none;
+        border-radius: 50px;
+        font-size: 16px;
+        font-weight: 700;
+        font-family: inherit;
+        cursor: pointer;
+        box-shadow: 0 4px 20px var(--pink-glow);
+        transition: transform 0.15s;
+        -webkit-tap-highlight-color: transparent;
+      }
+      .btn-next:active {
+        transform: scale(0.95);
+      }
+
+      /* Confetti canvas */
+      #confetti-canvas {
+        position: fixed;
+        inset: 0;
+        width: 100%;
+        height: 100%;
+        pointer-events: none;
+        z-index: 9999;
+      }
+    </style>
+  </head>
+  <body>
+    <canvas id="confetti-canvas"></canvas>
+
+    <div id="app">
+
+      <!-- ═══════ PAGE 1: CAPTCHA ═══════ -->
+      <div v-if="currentPage === 1" class="page page-enter" :key="1">
+        <div class="captcha-box" :class="{ shake: captchaShake }">
+          <div class="captcha-header">
+            <div class="captcha-title">Select all squares with places we've been together</div>
+            <div class="captcha-subtitle">If there are none, click Verify</div>
+          </div>
+
+          <div v-if="!captchaVerified" class="captcha-grid">
+            <div
+              v-for="city in cities"
+              :key="city.name"
+              class="captcha-cell"
+              :class="{ selected: city.selected }"
+              @click="toggleCity(city)"
+            >
+              {{ city.name }}
+            </div>
+          </div>
+
+          <div v-if="captchaVerified" class="captcha-success">
+            <div class="checkmark">✓</div>
+            <p>Verification Complete!</p>
+          </div>
+
+          <div v-if="captchaError && !captchaVerified" class="captcha-error">
+            {{ captchaError }}
+          </div>
+
+          <div v-if="!captchaVerified" class="captcha-footer">
+            <div class="captcha-logo"><span>reCAPTCHA</span><br/>Valentine Edition</div>
+            <button class="btn-verify" @click="verifyCaptcha">Verify</button>
+          </div>
+        </div>
+      </div>
+
+      <!-- ═══════ PAGE 2: TINDER ═══════ -->
+      <div v-if="currentPage === 2" class="page page-enter tinder-page" :key="2">
+        <div class="tinder-top-bar">
+          <div class="tinder-flame">🔥</div>
+          <span>tinder</span>
+        </div>
+
+        <div class="tinder-card-wrapper">
+          <div ref="tinderCard" class="tinder-card" :style="tinderCardStyle">
+            <div class="tinder-overlay nope-overlay" :style="{ opacity: nopeOpacity }">✕ NOPE</div>
+            <div class="tinder-overlay like-overlay" :style="{ opacity: likeOpacity }">♥ LIKE</div>
+
+            <div v-if="tinderRejectMsg" class="tinder-reject-msg" @click="clearReject">
+              <div class="emoji">😤</div>
+              <p>{{ tinderRejectMsg }}</p>
+              <br/>
+              <small style="opacity:0.5">Tap to try again</small>
+            </div>
+
+            <div class="tinder-photo">
+              <div class="photo-overlay">
+                <h2>Rohit, <span>29</span></h2>
+                <div class="distance">📍 0 KM away</div>
+              </div>
+            </div>
+
+            <div class="tinder-info">
+              <div class="profession">💼 AI/ML Engineer</div>
+
+              <div class="tinder-section">
+                <h4>Looking for</h4>
+                <p>Someone who has a pure heart and is ready to come along with me to vanwas without any complaints 🏹</p>
+              </div>
+
+              <div class="tinder-section">
+                <h4>About me</h4>
+                <p>Even I don't know who I am, still figuring it out and life. But to answer this: I'm a small town guy who is overly ambitious. Professional code likhta hu and unprofessional jokes marta hu. I like to build things and make people happy (just like this). Fan of experiences!!! 🚀</p>
+              </div>
+
+              <div class="tinder-section">
+                <h4>Hobbies</h4>
+                <div class="tinder-hobbies">
+                  <span class="tinder-hobby">💻 Coding</span>
+                  <span class="tinder-hobby">🍳 Cooking (sorry in advance)</span>
+                  <span class="tinder-hobby">✈️ Travel</span>
+                  <span class="tinder-hobby">🏔️ Adventures</span>
+                  <span class="tinder-hobby">😈 Annoying you (full-time hobby)</span>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div class="tinder-actions">
+          <div class="tinder-btn nope" @click="tinderSwipeLeft">✕</div>
+          <div class="tinder-btn like" @click="tinderSwipeRight">♥</div>
+        </div>
+        <div class="tinder-swipe-hint">← Swipe the card or tap buttons →</div>
+      </div>
+
+      <!-- ═══════ PAGE 3: PROPOSAL ═══════ -->
+      <div v-if="currentPage === 3" class="page page-enter proposal-page" :key="3">
+        <div class="proposal-sparkles">
+          <div v-for="n in 20" :key="n" class="sparkle" :style="sparkleStyle(n)"></div>
+        </div>
+
+        <template v-if="!proposalResult">
+          <div class="proposal-title">Will You Be<br/>My Valentine?</div>
+          <div class="proposal-subtitle">Choose wisely... 💘</div>
+
+          <div ref="proposalArea" class="proposal-buttons">
+            <button
+              ref="yesBtn"
+              class="btn-proposal btn-yes"
+              :style="yesBtnStyle"
+              @click="clickedYes"
+              @mouseover="dodgeYes"
+              @touchstart.prevent="dodgeYes"
+            >Yes 💍</button>
+
+            <button class="btn-proposal btn-no" @click="clickedNo">No 🙅‍♀️</button>
+          </div>
+
+          <div class="proposal-dodge-hint" :class="{ visible: dodgeCount >= 5 }">
+            Soch le... Muje pakadna mushkil hai 😏
+          </div>
+        </template>
+
+        <div v-if="proposalResult === 'yes'" class="proposal-result">
+          <div class="result-emoji">😢</div>
+          <h2>Wrong answer!</h2>
+          <p>You'll regret it... Try again!</p>
+          <button class="btn-next" @click="resetProposal">Try Again</button>
+        </div>
+
+        <div v-if="proposalResult === 'no'" class="proposal-result">
+          <div class="result-emoji">😎</div>
+          <h2>That's my girl! Haramiiii!!!</h2>
+          <p>I knew you'd make the right choice 💕</p>
+          <button class="btn-next" @click="goToPage(4)">Continue →</button>
+        </div>
+      </div>
+
+      <!-- ═══════ PAGE 4: T&C ═══════ -->
+      <div v-if="currentPage === 4" class="page page-enter tc-page" :key="4">
+        <div class="tc-box">
+          <div class="tc-header">
+            <h2>Terms & Conditions<br/>of Dating Rohit</h2>
+            <div class="tc-date">Effective: 14 February 2026 | Document: RV-2026-LOVE</div>
+          </div>
+
+          <template v-if="!tcSigned">
+            <div ref="tcScroll" class="tc-scroll" @scroll="onTcScroll">
+              <p style="margin-bottom:16px;font-style:italic;color:#999;">
+                By proceeding, you ("The Girlfriend") hereby agree to the following legally-binding* terms with Rohit ("The Boyfriend", "The Best Thing That Happened To You").
+              </p>
+
+              <div v-for="(clause, i) in tcClauses" :key="i" class="tc-clause">
+                <span class="clause-num">Section {{ i + 1 }}.</span><br/>
+                {{ clause }}
+              </div>
+
+              <p style="margin-top:20px;font-size:11px;color:#bbb;font-style:italic;">
+                *Not actually legally binding. But emotionally? 100% enforceable.
+              </p>
+            </div>
+
+            <div class="tc-footer">
+              <div v-if="!tcScrolledToBottom" class="tc-scroll-hint">↓ Scroll down to read all terms ↓</div>
+              <div class="tc-agree-row" :class="{ enabled: tcScrolledToBottom }">
+                <input type="checkbox" id="tc-agree" v-model="tcAgreed" />
+                <label for="tc-agree">I Agree to All Terms</label>
+              </div>
+            </div>
+          </template>
+
+          <div v-if="tcSigned" class="tc-success">
+            <div class="emoji">📝</div>
+            <p>Contract sealed!<br/>Ab peeche nahi hat sakte 😘</p>
+            <br/>
+            <button class="btn-next" @click="goToPage(5)">Continue →</button>
+          </div>
+        </div>
+      </div>
+
+      <!-- ═══════ PAGE 5: QUIZ ═══════ -->
+      <div v-if="currentPage === 5" class="page page-enter quiz-page" :key="5">
+
+        <template v-if="!quizStarted">
+          <div class="quiz-intro">
+            <h2>🎁 Valentine Surprise Awaits!</h2>
+            <p>I've a surprise for you... but pehle quiz pass karo!</p>
+            <button class="btn-next" @click="quizStarted = true">Start Quiz →</button>
+          </div>
+        </template>
+
+        <template v-if="quizStarted && !quizComplete">
+          <div class="quiz-progress">
+            <div class="quiz-progress-bar" :style="{ width: ((quizCurrentQ) / quizQuestions.length * 100) + '%' }"></div>
+          </div>
+
+          <div class="quiz-card" :key="quizCurrentQ">
+            <div class="quiz-q-num">Question {{ quizCurrentQ + 1 }} of {{ quizQuestions.length }}</div>
+            <div class="quiz-question">{{ quizQuestions[quizCurrentQ].q }}</div>
+
+            <div class="quiz-options">
+              <button
+                v-for="(opt, oi) in quizQuestions[quizCurrentQ].options"
+                :key="oi"
+                class="quiz-option"
+                :class="{
+                  'selected-correct': quizAnswered !== null && oi === quizQuestions[quizCurrentQ].correct,
+                  'selected-wrong': quizAnswered === oi && oi !== quizQuestions[quizCurrentQ].correct
+                }"
+                @click="answerQuiz(oi)"
+                :disabled="quizAnswered !== null"
+              >
+                {{ opt }}
+              </button>
+            </div>
+
+            <div v-if="quizFeedback" class="quiz-feedback" :style="{ color: quizFeedbackColor }">
+              {{ quizFeedback }}
+            </div>
+          </div>
+        </template>
+
+        <template v-if="quizComplete">
+          <div class="quiz-result">
+            <div class="score-circle">{{ quizPercent }}%</div>
+            <h2>{{ quizResultTitle }}</h2>
+            <p>{{ quizResultMsg }}</p>
+            <button v-if="quizPercent >= 80" class="btn-next" @click="goToPage(6)">Claim Your Prize 🎁</button>
+            <button v-else class="btn-next" @click="retryQuiz">Try Again 🔄</button>
+          </div>
+        </template>
+      </div>
+
+      <!-- ═══════ PAGE 6: SCRATCH CARDS ═══════ -->
+      <div v-if="currentPage === 6" class="page page-enter scratch-page" :key="6">
+        <h2>🎉 Your Prize Awaits!</h2>
+
+        <!-- Step 1: Pick a card -->
+        <template v-if="scratchChosen === null">
+          <div class="scratch-subtitle">Choose one card... choose wisely! 👀</div>
+          <div class="scratch-pick-row">
+            <div
+              v-for="(card, i) in scratchCards"
+              :key="i"
+              class="scratch-pick-card"
+              @click="chooseScratchCard(i)"
+            >
+              <div class="card-num">🎁</div>
+              <div class="card-label">Card {{ i + 1 }}</div>
+            </div>
+          </div>
+        </template>
+
+        <!-- Step 2: Scratch the chosen card -->
+        <template v-if="scratchChosen !== null && !scratchCards[scratchChosen].revealed">
+          <div class="scratch-subtitle">Scratch to reveal your prize! ✨</div>
+          <div class="scratch-active-wrapper">
+            <div class="scratch-card-big" ref="scratchBig">
+              <div class="prize-content">{{ scratchPrizes[scratchChosen] }}</div>
+              <canvas ref="scratchCanvas"></canvas>
+              <div class="scratch-label">Scratch here ✨</div>
+            </div>
+            <div class="scratch-hint">Use your finger to scratch</div>
+          </div>
+        </template>
+
+        <!-- Step 3: Prize revealed -->
+        <template v-if="scratchChosen !== null && scratchCards[scratchChosen].revealed">
+          <div class="scratch-active-wrapper">
+            <div class="scratch-card-big revealed">
+              <div class="prize-content">{{ scratchPrizes[scratchChosen] }}</div>
+            </div>
+            <div class="scratch-final">
+              <div class="emoji">💝</div>
+              <p>Redeem karne ke liye<br/>Rohit ko dikhao! 😘</p>
+            </div>
+          </div>
+        </template>
+      </div>
+
+    </div>
+
+    <script src="https://unpkg.com/vue@3/dist/vue.global.prod.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/interactjs/dist/interact.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js"></script>
+
+    <script>
+      const { createApp } = Vue;
+
+      createApp({
+        data() {
+          return {
+            currentPage: 1,
+
+            // Page 1: CAPTCHA
+            cities: [],
+            captchaError: '',
+            captchaShake: false,
+            captchaVerified: false,
+            captchaErrorMessages: [
+              "Babu, seriously? Hum waha gaye the! 😤",
+              "Kya tum kisi aur ke saath gayi thi waha? 🤨",
+              "Ek aur chance... concentrate! 🧐",
+              "Itna bhi yaad nahi? I'm hurt 💔",
+              "Google Maps check kar le... 🗺️",
+            ],
+            captchaErrorIndex: 0,
+
+            // Page 2: Tinder
+            tinderPos: { x: 0, y: 0 },
+            tinderDragging: false,
+            tinderRejectMsg: '',
+
+            // Page 3: Proposal
+            yesBtnPos: { x: 0, y: 80 },
+            dodgeCount: 0,
+            proposalResult: null,
+
+            // Page 4: T&C
+            tcScrolledToBottom: false,
+            tcAgreed: false,
+            tcSigned: false,
+            tcClauses: [
+              "Cooking duties: 90% Girlfriend, 10% Rohit.",
+              "Mera dimaag nahi khana, questions puch puchke.",
+              "Netflix pe kya dekhna wo me decide karunga. No negotiations. Fu*k your korean shits.",
+              "Reels band karna compulsory hai. Instead read books.",
+              "Har argument ke baad tumhe pehle sorry bolna hoga, chahe galti tumhari ho ya meri.",
+              "Last but not the least, support me to chase my dreams and I'll support you to chase yours. Together, we can conquer the world! 🌍❤️",
+            ],
+
+            // Page 5: Quiz
+            quizStarted: false,
+            quizCurrentQ: 0,
+            quizAnswered: null,
+            quizFeedback: '',
+            quizFeedbackColor: '#4cd964',
+            quizScore: 0,
+            quizComplete: false,
+            quizQuestions: [
+              {
+                q: "Rohit ki favorite kon hai?",
+                options: ["Sassu 🐰", "Beduk 🐸"],
+                correct: 1,
+                feedback: { 0: "Usko to me jaanta bhi nahi hu 😏", 1: "Sahi jawab...😉" },
+                bothCorrect: true,
+              },
+              {
+                q: "Rohit ko kya jyada pasand hai?",
+                options: ["Ganja 🧘‍♂️", "Daru 🍺"],
+                correct: 0,
+                feedback: { 0: "Hell yeah 🔥", 1: "Nah nah..." },
+              },
+              {
+                q: "Rohit is best in which sport?",
+                options: ["Badminton 🏸", "Table Tennis 🏓"],
+                correct: 1,
+                feedback: { 0: "Nahi babuu! 😤", 1: "Nationals khela hai tera babuu 💪🏼" },
+              },
+              {
+                q: "Humari next trip kahan honi chahiye?",
+                options: ["Budapest 🏰", "Venice 🛶"],
+                correct: 1,
+                feedback: { 0: "Bad me kabhi! 🥐", 1: "Perfect answer! 🥰" },
+                bothCorrect: true,
+              },
+              {
+                q: "What is Rohit's dream?",
+                options: ["Driving porsche on Autobahn 🏎️", "Traveling the world 🌍"],
+                correct: 0,
+                feedback: { 0: "Smart girl! 😎", 1: "Bold choice... but wrong 😂" },
+              },
+            ],
+
+            // Page 6: Scratch Cards
+            scratchChosen: null,
+            scratchCards: [
+              { revealed: false },
+              { revealed: false },
+              { revealed: false },
+            ],
+            scratchPrizes: [
+              "🎬 1 Movie Night — Apki ki choice, me sehen kar lunga!",
+              "🔥 1 Special Night — Netflix OFF, lights OFF, no complaints 😏",
+              "🫂 Unlimited Hugs Pass — Valid forever, no expiry",
+            ],
+          };
+        },
+
+        computed: {
+          tinderCardStyle() {
+            const x = this.tinderPos.x;
+            const rot = x * 0.08;
+            return {
+              transform: `translateX(${x}px) rotate(${rot}deg)`,
+              transition: this.tinderDragging ? 'none' : 'transform 0.4s ease',
+            };
+          },
+          nopeOpacity() {
+            return Math.min(1, Math.max(0, -this.tinderPos.x / 100));
+          },
+          likeOpacity() {
+            return Math.min(1, Math.max(0, this.tinderPos.x / 100));
+          },
+          yesBtnStyle() {
+            return {
+              left: this.yesBtnPos.x + 'px',
+              top: this.yesBtnPos.y + 'px',
+            };
+          },
+          quizPercent() {
+            return Math.round((this.quizScore / this.quizQuestions.length) * 100);
+          },
+          quizResultTitle() {
+            const p = this.quizPercent;
+            if (p >= 100) return "Perfect! 🎓";
+            if (p >= 80) return "Passed! 🎉";
+            return "Failed! 😤";
+          },
+          quizResultMsg() {
+            const p = this.quizPercent;
+            if (p >= 100) return "Tujhe toh PhD milni chahiye mujhme!";
+            if (p >= 80) return "You know me well enough... prize deserve karti ho!";
+            return "Itna bhi nahi jaanti mujhe? Dobara try kar... prize chahiye toh mehnat kar! 😂";
+          },
+        },
+
+        watch: {
+          tcAgreed(val) {
+            if (val) {
+              this.tcSigned = true;
+              this.fireConfetti();
+            }
+          },
+        },
+
+        mounted() {
+          // Shuffle cities
+          const allCities = [
+            { name: 'Berlin', correct: true, selected: false },
+            { name: 'Munich', correct: true, selected: false },
+            { name: 'Dresden', correct: true, selected: false },
+            { name: 'Hamburg', correct: true, selected: false },
+            { name: 'Rostock', correct: true, selected: false },
+            { name: 'Quedlinburg', correct: true, selected: false },
+            { name: 'Frankfurt', correct: false, selected: false },
+            { name: 'Stuttgart', correct: false, selected: false },
+            { name: 'Leipzig', correct: false, selected: false },
+          ];
+          this.cities = allCities.sort(() => Math.random() - 0.5);
+
+          // Setup confetti
+          this.confettiInstance = confetti.create(document.getElementById('confetti-canvas'), { resize: true });
+        },
+
+        methods: {
+          // ─── Navigation ───
+          goToPage(n) {
+            this.currentPage = n;
+            this.$nextTick(() => {
+              if (n === 2) this.setupTinderDrag();
+            });
+          },
+
+          fireConfetti() {
+            this.confettiInstance({
+              particleCount: 120,
+              spread: 80,
+              origin: { y: 0.6 },
+              colors: ['#ff2e63', '#ffd700', '#ff6b8a', '#fff', '#4cd964'],
+            });
+            setTimeout(() => {
+              this.confettiInstance({
+                particleCount: 80,
+                spread: 110,
+                origin: { y: 0.55 },
+                colors: ['#ff2e63', '#ffd700', '#ff6b8a', '#fff'],
+              });
+            }, 200);
+          },
+
+          // ─── Page 1: CAPTCHA ───
+          toggleCity(city) {
+            city.selected = !city.selected;
+            this.captchaError = '';
+          },
+
+          verifyCaptcha() {
+            const selectedCorrect = this.cities.filter(c => c.correct && c.selected).length;
+            const selectedWrong = this.cities.filter(c => !c.correct && c.selected).length;
+
+            if (selectedCorrect === 6 && selectedWrong === 0) {
+              this.captchaVerified = true;
+              setTimeout(() => this.goToPage(2), 1500);
+            } else {
+              this.captchaError = this.captchaErrorMessages[this.captchaErrorIndex % this.captchaErrorMessages.length];
+              this.captchaErrorIndex++;
+              this.captchaShake = true;
+              setTimeout(() => { this.captchaShake = false; }, 400);
+            }
+          },
+
+          // ─── Page 2: Tinder ───
+          setupTinderDrag() {
+            const card = this.$refs.tinderCard;
+            if (!card) return;
+
+            interact(card).draggable({
+              inertia: false,
+              listeners: {
+                start: () => { this.tinderDragging = true; },
+                move: (event) => {
+                  this.tinderPos.x += event.dx;
+                },
+                end: () => {
+                  this.tinderDragging = false;
+                  if (this.tinderPos.x < -100) {
+                    this.handleTinderLeft();
+                  } else if (this.tinderPos.x > 100) {
+                    this.handleTinderRight();
+                  } else {
+                    this.tinderPos.x = 0;
+                  }
+                },
+              },
+            });
+          },
+
+          handleTinderLeft() {
+            this.tinderPos.x = 0;
+            this.tinderRejectMsg = "Think again... Aisa item dobara nahi milega! 😤";
+          },
+
+          handleTinderRight() {
+            this.tinderPos.x = 400;
+            setTimeout(() => {
+              this.tinderPos.x = 0;
+              this.goToPage(3);
+            }, 400);
+          },
+
+          tinderSwipeLeft() {
+            this.tinderPos.x = -120;
+            setTimeout(() => this.handleTinderLeft(), 300);
+          },
+
+          tinderSwipeRight() {
+            this.handleTinderRight();
+          },
+
+          clearReject() {
+            this.tinderRejectMsg = '';
+          },
+
+          // ─── Page 3: Proposal ───
+          sparkleStyle(n) {
+            return {
+              left: Math.random() * 100 + '%',
+              top: Math.random() * 100 + '%',
+              animationDelay: (Math.random() * 3) + 's',
+              animationDuration: (2 + Math.random() * 2) + 's',
+            };
+          },
+
+          dodgeYes() {
+            this.dodgeCount++;
+            const area = this.$refs.proposalArea;
+            if (!area) return;
+            const rect = area.getBoundingClientRect();
+            const maxX = rect.width - 140;
+            const maxY = 160;
+            this.yesBtnPos = {
+              x: Math.random() * maxX,
+              y: Math.random() * maxY,
+            };
+          },
+
+          clickedYes() {
+            this.proposalResult = 'yes';
+          },
+
+          clickedNo() {
+            this.proposalResult = 'no';
+            this.fireConfetti();
+          },
+
+          resetProposal() {
+            this.proposalResult = null;
+            this.dodgeCount = 0;
+            this.yesBtnPos = { x: 0, y: 80 };
+          },
+
+          // ─── Page 4: T&C ───
+          onTcScroll() {
+            const el = this.$refs.tcScroll;
+            if (!el) return;
+            const atBottom = el.scrollTop + el.clientHeight >= el.scrollHeight - 30;
+            if (atBottom) this.tcScrolledToBottom = true;
+          },
+
+          // ─── Page 5: Quiz ───
+          answerQuiz(optionIndex) {
+            if (this.quizAnswered !== null) return;
+            this.quizAnswered = optionIndex;
+
+            const q = this.quizQuestions[this.quizCurrentQ];
+            const isCorrect = optionIndex === q.correct;
+
+            if (isCorrect) {
+              this.quizScore++;
+              this.quizFeedbackColor = '#4cd964';
+            } else {
+              this.quizFeedbackColor = '#fe3c72';
+            }
+            this.quizFeedback = q.feedback[optionIndex];
+
+            setTimeout(() => {
+              if (this.quizCurrentQ < this.quizQuestions.length - 1) {
+                this.quizCurrentQ++;
+                this.quizAnswered = null;
+                this.quizFeedback = '';
+              } else {
+                this.quizComplete = true;
+                if (this.quizPercent >= 80) this.fireConfetti();
+              }
+            }, 1500);
+          },
+
+          retryQuiz() {
+            this.quizCurrentQ = 0;
+            this.quizAnswered = null;
+            this.quizFeedback = '';
+            this.quizScore = 0;
+            this.quizComplete = false;
+          },
+
+          // ─── Page 6: Scratch Cards ───
+          chooseScratchCard(index) {
+            this.scratchChosen = index;
+            this.$nextTick(() => {
+              requestAnimationFrame(() => {
+                requestAnimationFrame(() => {
+                  this.setupSingleScratchCard();
+                });
+              });
+            });
+          },
+
+          setupSingleScratchCard() {
+            const canvas = this.$refs.scratchCanvas;
+            if (!canvas) return;
+
+            const wrapper = this.$refs.scratchBig;
+            const rect = wrapper.getBoundingClientRect();
+            canvas.width = rect.width;
+            canvas.height = rect.height;
+
+            const ctx = canvas.getContext('2d');
+
+            // Draw gold overlay
+            const grad = ctx.createLinearGradient(0, 0, rect.width, rect.height);
+            grad.addColorStop(0, '#ffd700');
+            grad.addColorStop(0.5, '#ffaa00');
+            grad.addColorStop(1, '#ffd700');
+            ctx.fillStyle = grad;
+            ctx.fillRect(0, 0, rect.width, rect.height);
+
+            // Sparkle pattern
+            ctx.fillStyle = 'rgba(255,255,255,0.15)';
+            for (let s = 0; s < 40; s++) {
+              const sx = Math.random() * rect.width;
+              const sy = Math.random() * rect.height;
+              ctx.beginPath();
+              ctx.arc(sx, sy, Math.random() * 4 + 1, 0, Math.PI * 2);
+              ctx.fill();
+            }
+
+            // "?" text on overlay
+            ctx.fillStyle = 'rgba(255,255,255,0.2)';
+            ctx.font = 'bold 80px Poppins, sans-serif';
+            ctx.textAlign = 'center';
+            ctx.textBaseline = 'middle';
+            ctx.fillText('?', rect.width / 2, rect.height / 2);
+
+            let isDrawing = false;
+            const chosen = this.scratchChosen;
+
+            const getPos = (e) => {
+              const r = canvas.getBoundingClientRect();
+              const touch = e.touches ? e.touches[0] : e;
+              return { x: touch.clientX - r.left, y: touch.clientY - r.top };
+            };
+
+            const scratch = (pos) => {
+              ctx.globalCompositeOperation = 'destination-out';
+              ctx.beginPath();
+              ctx.arc(pos.x, pos.y, 28, 0, Math.PI * 2);
+              ctx.fill();
+            };
+
+            const checkReveal = () => {
+              const imageData = ctx.getImageData(0, 0, canvas.width, canvas.height);
+              let transparent = 0;
+              for (let p = 3; p < imageData.data.length; p += 4) {
+                if (imageData.data[p] === 0) transparent++;
+              }
+              const pct = transparent / (imageData.data.length / 4);
+              if (pct > 0.45) {
+                this.scratchCards[chosen].revealed = true;
+                setTimeout(() => this.fireConfetti(), 300);
+              }
+            };
+
+            const onStart = (e) => {
+              e.preventDefault();
+              isDrawing = true;
+              scratch(getPos(e));
+            };
+            const onMove = (e) => {
+              e.preventDefault();
+              if (!isDrawing) return;
+              scratch(getPos(e));
+            };
+            const onEnd = () => {
+              isDrawing = false;
+              checkReveal();
+            };
+
+            canvas.addEventListener('mousedown', onStart);
+            canvas.addEventListener('mousemove', onMove);
+            canvas.addEventListener('mouseup', onEnd);
+            canvas.addEventListener('mouseleave', onEnd);
+            canvas.addEventListener('touchstart', onStart, { passive: false });
+            canvas.addEventListener('touchmove', onMove, { passive: false });
+            canvas.addEventListener('touchend', onEnd);
+          },
+        },
+      }).mount('#app');
+    </script>
+  </body>
+</html>
