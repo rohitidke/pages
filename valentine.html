@@ -254,7 +254,7 @@
         position: relative;
         width: 100%;
         max-width: 380px;
-        touch-action: none;
+        touch-action: pan-y;
       }
       .tinder-card {
         background: var(--card-bg);
@@ -262,7 +262,7 @@
         overflow: hidden;
         box-shadow: 0 8px 40px rgba(0,0,0,0.3);
         position: relative;
-        touch-action: none;
+        touch-action: pan-y;
         will-change: transform;
       }
       .tinder-photo {
@@ -838,6 +838,7 @@
         height: 100%;
         cursor: pointer;
         touch-action: none;
+        -ms-touch-action: none;
       }
       .scratch-card-big.revealed canvas {
         opacity: 0;
@@ -1571,10 +1572,14 @@
 
             const wrapper = this.$refs.scratchBig;
             const rect = wrapper.getBoundingClientRect();
-            canvas.width = rect.width;
-            canvas.height = rect.height;
+            const dpr = window.devicePixelRatio || 1;
+
+            // Set canvas buffer to device pixels for sharp rendering
+            canvas.width = rect.width * dpr;
+            canvas.height = rect.height * dpr;
 
             const ctx = canvas.getContext('2d');
+            ctx.scale(dpr, dpr);
 
             // Draw gold overlay
             const grad = ctx.createLinearGradient(0, 0, rect.width, rect.height);
@@ -1603,17 +1608,20 @@
 
             let isDrawing = false;
             const chosen = this.scratchChosen;
+            const self = this;
 
             const getPos = (e) => {
               const r = canvas.getBoundingClientRect();
-              const touch = e.touches ? e.touches[0] : e;
-              return { x: touch.clientX - r.left, y: touch.clientY - r.top };
+              return {
+                x: (e.clientX - r.left),
+                y: (e.clientY - r.top),
+              };
             };
 
             const scratch = (pos) => {
               ctx.globalCompositeOperation = 'destination-out';
               ctx.beginPath();
-              ctx.arc(pos.x, pos.y, 28, 0, Math.PI * 2);
+              ctx.arc(pos.x, pos.y, 30, 0, Math.PI * 2);
               ctx.fill();
             };
 
@@ -1624,34 +1632,35 @@
                 if (imageData.data[p] === 0) transparent++;
               }
               const pct = transparent / (imageData.data.length / 4);
-              if (pct > 0.45) {
-                this.scratchCards[chosen].revealed = true;
-                setTimeout(() => this.fireConfetti(), 300);
+              if (pct > 0.4) {
+                self.scratchCards[chosen].revealed = true;
+                setTimeout(() => self.fireConfetti(), 300);
               }
             };
 
-            const onStart = (e) => {
+            // Use pointer events (unified mouse + touch)
+            canvas.addEventListener('pointerdown', (e) => {
               e.preventDefault();
+              canvas.setPointerCapture(e.pointerId);
               isDrawing = true;
               scratch(getPos(e));
-            };
-            const onMove = (e) => {
+            });
+
+            canvas.addEventListener('pointermove', (e) => {
               e.preventDefault();
               if (!isDrawing) return;
               scratch(getPos(e));
-            };
-            const onEnd = () => {
+            });
+
+            canvas.addEventListener('pointerup', (e) => {
               isDrawing = false;
               checkReveal();
-            };
+            });
 
-            canvas.addEventListener('mousedown', onStart);
-            canvas.addEventListener('mousemove', onMove);
-            canvas.addEventListener('mouseup', onEnd);
-            canvas.addEventListener('mouseleave', onEnd);
-            canvas.addEventListener('touchstart', onStart, { passive: false });
-            canvas.addEventListener('touchmove', onMove, { passive: false });
-            canvas.addEventListener('touchend', onEnd);
+            canvas.addEventListener('pointercancel', () => {
+              isDrawing = false;
+              checkReveal();
+            });
           },
         },
       }).mount('#app');
