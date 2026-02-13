@@ -817,6 +817,7 @@
         width: 100%;
         max-width: 340px;
         height: 220px;
+        -webkit-tap-highlight-color: transparent;
       }
       .scratch-card-big .prize-content {
         position: absolute;
@@ -831,35 +832,37 @@
         text-align: center;
         line-height: 1.5;
       }
-      .scratch-card-big canvas {
+      .scratch-card-big .prize-content.hidden {
+        opacity: 0;
+      }
+      .scratch-cover-fallback {
+        position: absolute;
+        inset: 0;
+        background: linear-gradient(135deg, #bcc2c9, #f6f8fa, #aeb5be);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        text-align: center;
+        padding: 18px;
+        font-size: 14px;
+        font-weight: 700;
+        color: rgba(65, 65, 65, 0.82);
+        z-index: 1;
+        pointer-events: none;
+      }
+      .scratch-canvas {
         position: absolute;
         inset: 0;
         width: 100%;
         height: 100%;
-        cursor: pointer;
         touch-action: none;
-        -ms-touch-action: none;
-      }
-      .scratch-card-big.revealed canvas {
-        opacity: 0;
-        transition: opacity 0.5s;
-        pointer-events: none;
-      }
-      .scratch-card-big .scratch-label {
-        position: absolute;
-        inset: 0;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        font-size: 16px;
-        font-weight: 700;
-        color: rgba(100, 70, 0, 0.8);
-        pointer-events: none;
+        cursor: crosshair;
+        transition: opacity 0.5s ease;
         z-index: 2;
-        text-shadow: 0 1px 2px rgba(255,255,255,0.5);
       }
-      .scratch-card-big.revealed .scratch-label {
-        display: none;
+      .scratch-canvas.fading {
+        opacity: 0;
+        pointer-events: none;
       }
       .scratch-hint {
         margin-top: 16px;
@@ -974,7 +977,7 @@
             <div class="tinder-photo">
               <div class="photo-overlay">
                 <h2>Rohit, <span>29</span></h2>
-                <div class="distance">📍 0 KM away</div>
+                <div class="distance">📍 0 miles away</div>
               </div>
             </div>
 
@@ -988,7 +991,7 @@
 
               <div class="tinder-section">
                 <h4>About me</h4>
-                <p>Even I don't know who I am, still figuring it out and life. But to answer this: I'm a small town guy who is overly ambitious. Professional code likhta hu and unprofessional jokes marta hu. I like to build things and make people happy (just like this). Fan of experiences!!! 🚀</p>
+                <p>Even I don't know who I am, still figuring it out and life. But to answer this: I'm a small town guy who is overly ambitious. Professional code likhta hu and unprofessional jokes marta hu. I like to build things and make people happy. Fan of experiences!!! 🚀</p>
               </div>
 
               <div class="tinder-section">
@@ -1005,11 +1008,7 @@
           </div>
         </div>
 
-        <div class="tinder-actions">
-          <div class="tinder-btn nope" @click="tinderSwipeLeft">✕</div>
-          <div class="tinder-btn like" @click="tinderSwipeRight">♥</div>
-        </div>
-        <div class="tinder-swipe-hint">← Swipe the card or tap buttons →</div>
+        <div class="tinder-swipe-hint">← Swipe the card →</div>
       </div>
 
       <!-- ═══════ PAGE 3: PROPOSAL ═══════ -->
@@ -1171,28 +1170,36 @@
         </template>
 
         <!-- Step 2: Scratch the chosen card -->
-        <template v-if="scratchChosen !== null && !scratchCards[scratchChosen].revealed">
-          <div class="scratch-subtitle">Scratch to reveal your prize! ✨</div>
+        <template v-if="scratchChosen !== null">
+          <div class="scratch-subtitle" v-if="!scratchCards[scratchChosen].revealed">Scratch the silver layer to reveal your prize! ✨</div>
           <div class="scratch-active-wrapper">
-            <div class="scratch-card-big" ref="scratchBig">
-              <div class="prize-content">{{ scratchPrizes[scratchChosen] }}</div>
-              <canvas ref="scratchCanvas"></canvas>
-              <div class="scratch-label">Scratch here ✨</div>
+            <div class="scratch-card-big">
+              <div
+                class="prize-content"
+                :class="{ hidden: !scratchCards[scratchChosen].revealed && !scratchCanvasReady }"
+              >
+                {{ scratchPrizes[scratchChosen] }}
+              </div>
+              <div v-if="!scratchCards[scratchChosen].revealed && !scratchCanvasReady" class="scratch-cover-fallback">
+                Scratch here ✨
+              </div>
+              <canvas
+                ref="scratchCanvas"
+                class="scratch-canvas"
+                :class="{ fading: scratchCards[scratchChosen].revealed }"
+                @pointerdown="startScratch"
+                @pointermove="moveScratch"
+                @pointerup="endScratch"
+                @pointercancel="endScratch"
+                @pointerleave="endScratch"
+              ></canvas>
             </div>
-            <div class="scratch-hint">Use your finger to scratch</div>
+            <div class="scratch-hint" v-if="!scratchCards[scratchChosen].revealed">Scratch with your finger or mouse ({{ scratchRevealPercent }}%)</div>
           </div>
-        </template>
 
-        <!-- Step 3: Prize revealed -->
-        <template v-if="scratchChosen !== null && scratchCards[scratchChosen].revealed">
-          <div class="scratch-active-wrapper">
-            <div class="scratch-card-big revealed">
-              <div class="prize-content">{{ scratchPrizes[scratchChosen] }}</div>
-            </div>
-            <div class="scratch-final">
-              <div class="emoji">💝</div>
-              <p>Redeem karne ke liye<br/>Rohit ko dikhao! 😘</p>
-            </div>
+          <div v-if="scratchCards[scratchChosen].revealed" class="scratch-final">
+            <div class="emoji">💝</div>
+            <p>Redeem karne ke liye<br/>Rohit ko dikhao! 😘</p>
           </div>
         </template>
       </div>
@@ -1294,6 +1301,14 @@
 
             // Page 6: Scratch Cards
             scratchChosen: null,
+            scratchRevealPercent: 0,
+            scratchCanvasReady: false,
+            scratchCanvasCtx: null,
+            scratchIsDrawing: false,
+            scratchPointerId: null,
+            scratchLastPoint: null,
+            scratchMoveCount: 0,
+            scratchRevealThreshold: 52,
             scratchCards: [
               { revealed: false },
               { revealed: false },
@@ -1557,110 +1572,199 @@
           // ─── Page 6: Scratch Cards ───
           chooseScratchCard(index) {
             this.scratchChosen = index;
+            this.scratchRevealPercent = this.scratchCards[index].revealed ? 100 : 0;
+            this.scratchCanvasReady = this.scratchCards[index].revealed;
+            this.scratchCanvasCtx = null;
+            this.scratchIsDrawing = false;
+            this.scratchPointerId = null;
+            this.scratchLastPoint = null;
+            this.scratchMoveCount = 0;
             this.$nextTick(() => {
-              requestAnimationFrame(() => {
-                requestAnimationFrame(() => {
-                  this.setupSingleScratchCard();
-                });
-              });
+              if (!this.scratchCards[index].revealed) {
+                requestAnimationFrame(() => this.setupScratchCanvas(0));
+              }
             });
           },
 
-          setupSingleScratchCard() {
+          setupScratchCanvas(attempt = 0) {
             const canvas = this.$refs.scratchCanvas;
-            if (!canvas) return;
+            if (!canvas || this.scratchChosen === null) return;
 
-            const wrapper = this.$refs.scratchBig;
-            const rect = wrapper.getBoundingClientRect();
-            const dpr = window.devicePixelRatio || 1;
-
-            // Set canvas buffer to device pixels for sharp rendering
-            canvas.width = rect.width * dpr;
-            canvas.height = rect.height * dpr;
-
-            const ctx = canvas.getContext('2d');
-            ctx.scale(dpr, dpr);
-
-            // Draw gold overlay
-            const grad = ctx.createLinearGradient(0, 0, rect.width, rect.height);
-            grad.addColorStop(0, '#ffd700');
-            grad.addColorStop(0.5, '#ffaa00');
-            grad.addColorStop(1, '#ffd700');
-            ctx.fillStyle = grad;
-            ctx.fillRect(0, 0, rect.width, rect.height);
-
-            // Sparkle pattern
-            ctx.fillStyle = 'rgba(255,255,255,0.15)';
-            for (let s = 0; s < 40; s++) {
-              const sx = Math.random() * rect.width;
-              const sy = Math.random() * rect.height;
-              ctx.beginPath();
-              ctx.arc(sx, sy, Math.random() * 4 + 1, 0, Math.PI * 2);
-              ctx.fill();
+            const rect = canvas.getBoundingClientRect();
+            if (!rect.width || !rect.height) {
+              if (attempt < 8) {
+                requestAnimationFrame(() => this.setupScratchCanvas(attempt + 1));
+              }
+              return;
             }
 
-            // "?" text on overlay
-            ctx.fillStyle = 'rgba(255,255,255,0.2)';
-            ctx.font = 'bold 80px Poppins, sans-serif';
+            const dpr = Math.min(window.devicePixelRatio || 1, 2);
+            const cssWidth = Math.round(rect.width);
+            const cssHeight = Math.round(rect.height);
+            canvas.width = cssWidth * dpr;
+            canvas.height = cssHeight * dpr;
+
+            const ctx = canvas.getContext('2d');
+            if (!ctx) return;
+
+            ctx.setTransform(1, 0, 0, 1, 0, 0);
+            ctx.scale(dpr, dpr);
+
+            const foilGradient = ctx.createLinearGradient(0, 0, cssWidth, cssHeight);
+            foilGradient.addColorStop(0, '#bcc2c9');
+            foilGradient.addColorStop(0.45, '#f6f8fa');
+            foilGradient.addColorStop(1, '#aeb5be');
+            ctx.fillStyle = foilGradient;
+            ctx.fillRect(0, 0, cssWidth, cssHeight);
+
+            ctx.save();
+            ctx.globalAlpha = 0.23;
+            for (let i = -cssHeight; i < cssWidth + cssHeight; i += 14) {
+              ctx.beginPath();
+              ctx.strokeStyle = i % 28 === 0 ? '#ffffff' : '#7f8892';
+              ctx.lineWidth = 5;
+              ctx.moveTo(i, 0);
+              ctx.lineTo(i + cssHeight, cssHeight);
+              ctx.stroke();
+            }
+            ctx.restore();
+
+            ctx.fillStyle = 'rgba(65, 65, 65, 0.85)';
             ctx.textAlign = 'center';
             ctx.textBaseline = 'middle';
-            ctx.fillText('?', rect.width / 2, rect.height / 2);
+            ctx.font = '700 22px Poppins, sans-serif';
+            ctx.fillText('SCRATCH HERE', cssWidth / 2, cssHeight / 2 - 12);
+            ctx.font = '600 13px Poppins, sans-serif';
+            ctx.fillStyle = 'rgba(65, 65, 65, 0.7)';
+            ctx.fillText('Use finger or mouse', cssWidth / 2, cssHeight / 2 + 16);
 
-            let isDrawing = false;
-            const chosen = this.scratchChosen;
-            const self = this;
+            this.scratchCanvasCtx = ctx;
+            this.scratchCanvasReady = true;
+            this.scratchRevealPercent = 0;
+            this.scratchMoveCount = 0;
+            this.scratchLastPoint = null;
+          },
 
-            const getPos = (e) => {
-              const r = canvas.getBoundingClientRect();
-              return {
-                x: (e.clientX - r.left),
-                y: (e.clientY - r.top),
-              };
-            };
+          startScratch(event) {
+            if (this.scratchChosen === null) return;
+            if (this.scratchCards[this.scratchChosen].revealed) return;
+            if (!this.scratchCanvasCtx) this.setupScratchCanvas();
 
-            const scratch = (pos) => {
-              ctx.globalCompositeOperation = 'destination-out';
+            const canvas = this.$refs.scratchCanvas;
+            if (!canvas || !this.scratchCanvasCtx) return;
+
+            this.scratchIsDrawing = true;
+            this.scratchPointerId = event.pointerId;
+            this.scratchLastPoint = null;
+            if (canvas.setPointerCapture) canvas.setPointerCapture(event.pointerId);
+            this.eraseScratchAt(event);
+          },
+
+          moveScratch(event) {
+            if (!this.scratchIsDrawing) return;
+            if (event.pointerId !== this.scratchPointerId) return;
+
+            this.eraseScratchAt(event);
+            this.scratchMoveCount++;
+            if (this.scratchMoveCount % 10 === 0) this.checkScratchReveal();
+          },
+
+          endScratch(event) {
+            if (event.pointerId !== this.scratchPointerId) return;
+
+            const canvas = this.$refs.scratchCanvas;
+            if (canvas && canvas.releasePointerCapture) {
+              try {
+                canvas.releasePointerCapture(event.pointerId);
+              } catch (err) {}
+            }
+
+            this.scratchIsDrawing = false;
+            this.scratchPointerId = null;
+            this.scratchLastPoint = null;
+            this.checkScratchReveal();
+          },
+
+          eraseScratchAt(event) {
+            const point = this.getScratchPoint(event);
+            if (!point || !this.scratchCanvasCtx) return;
+
+            const ctx = this.scratchCanvasCtx;
+            ctx.save();
+            ctx.globalCompositeOperation = 'destination-out';
+            ctx.lineCap = 'round';
+            ctx.lineJoin = 'round';
+            ctx.lineWidth = 34;
+
+            if (this.scratchLastPoint) {
               ctx.beginPath();
-              ctx.arc(pos.x, pos.y, 30, 0, Math.PI * 2);
-              ctx.fill();
+              ctx.moveTo(this.scratchLastPoint.x, this.scratchLastPoint.y);
+              ctx.lineTo(point.x, point.y);
+              ctx.stroke();
+            }
+
+            ctx.beginPath();
+            ctx.arc(point.x, point.y, 17, 0, Math.PI * 2);
+            ctx.fill();
+            ctx.restore();
+
+            this.scratchLastPoint = point;
+          },
+
+          getScratchPoint(event) {
+            const canvas = this.$refs.scratchCanvas;
+            if (!canvas) return null;
+
+            const rect = canvas.getBoundingClientRect();
+            return {
+              x: event.clientX - rect.left,
+              y: event.clientY - rect.top,
             };
+          },
 
-            const checkReveal = () => {
-              const imageData = ctx.getImageData(0, 0, canvas.width, canvas.height);
-              let transparent = 0;
-              for (let p = 3; p < imageData.data.length; p += 4) {
-                if (imageData.data[p] === 0) transparent++;
+          checkScratchReveal() {
+            if (this.scratchChosen === null) return;
+            if (this.scratchCards[this.scratchChosen].revealed) return;
+
+            const canvas = this.$refs.scratchCanvas;
+            const ctx = this.scratchCanvasCtx;
+            if (!canvas || !ctx) return;
+
+            const width = canvas.width;
+            const height = canvas.height;
+            const step = 10;
+            const pixels = ctx.getImageData(0, 0, width, height).data;
+
+            let total = 0;
+            let cleared = 0;
+
+            for (let y = 0; y < height; y += step) {
+              for (let x = 0; x < width; x += step) {
+                const alphaIndex = (y * width + x) * 4 + 3;
+                total++;
+                if (pixels[alphaIndex] < 80) cleared++;
               }
-              const pct = transparent / (imageData.data.length / 4);
-              if (pct > 0.4) {
-                self.scratchCards[chosen].revealed = true;
-                setTimeout(() => self.fireConfetti(), 300);
-              }
-            };
+            }
 
-            // Use pointer events (unified mouse + touch)
-            canvas.addEventListener('pointerdown', (e) => {
-              e.preventDefault();
-              canvas.setPointerCapture(e.pointerId);
-              isDrawing = true;
-              scratch(getPos(e));
-            });
+            const percent = total ? (cleared / total) * 100 : 0;
+            this.scratchRevealPercent = Math.min(100, Math.round(percent));
 
-            canvas.addEventListener('pointermove', (e) => {
-              e.preventDefault();
-              if (!isDrawing) return;
-              scratch(getPos(e));
-            });
+            if (percent >= this.scratchRevealThreshold) {
+              this.revealScratchCard();
+            }
+          },
 
-            canvas.addEventListener('pointerup', (e) => {
-              isDrawing = false;
-              checkReveal();
-            });
+          revealScratchCard() {
+            if (this.scratchChosen === null) return;
+            if (this.scratchCards[this.scratchChosen].revealed) return;
 
-            canvas.addEventListener('pointercancel', () => {
-              isDrawing = false;
-              checkReveal();
-            });
+            this.scratchCards[this.scratchChosen].revealed = true;
+            this.scratchCanvasReady = true;
+            this.scratchRevealPercent = 100;
+            this.scratchIsDrawing = false;
+            this.scratchPointerId = null;
+            this.scratchLastPoint = null;
+            setTimeout(() => this.fireConfetti(), 350);
           },
         },
       }).mount('#app');
