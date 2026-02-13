@@ -4,6 +4,10 @@
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no" />
     <title>Prove You're My Valentine</title>
+    <link
+      rel="icon"
+      href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Ctext y='0.9em' font-size='90'%3E%E2%9D%A4%EF%B8%8F%3C/text%3E%3C/svg%3E"
+    />
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
     <link
@@ -1173,7 +1177,7 @@
         <template v-if="scratchChosen !== null">
           <div class="scratch-subtitle" v-if="!scratchCards[scratchChosen].revealed">Scratch the silver layer to reveal your prize! ✨</div>
           <div class="scratch-active-wrapper">
-            <div class="scratch-card-big">
+            <div class="scratch-card-big" ref="scratchCard">
               <div
                 class="prize-content"
                 :class="{ hidden: !scratchCards[scratchChosen].revealed && !scratchCanvasReady }"
@@ -1192,6 +1196,14 @@
                 @pointerup="endScratch"
                 @pointercancel="endScratch"
                 @pointerleave="endScratch"
+                @mousedown="startScratch"
+                @mousemove="moveScratch"
+                @mouseup="endScratch"
+                @mouseleave="endScratch"
+                @touchstart.prevent="startScratch"
+                @touchmove.prevent="moveScratch"
+                @touchend="endScratch"
+                @touchcancel="endScratch"
               ></canvas>
             </div>
             <div class="scratch-hint" v-if="!scratchCards[scratchChosen].revealed">Scratch with your finger or mouse ({{ scratchRevealPercent }}%)</div>
@@ -1590,8 +1602,11 @@
             const canvas = this.$refs.scratchCanvas;
             if (!canvas || this.scratchChosen === null) return;
 
-            const rect = canvas.getBoundingClientRect();
-            if (!rect.width || !rect.height) {
+            const card = this.$refs.scratchCard;
+            const rect = card ? card.getBoundingClientRect() : canvas.getBoundingClientRect();
+            const cssWidth = Math.round(rect.width || canvas.clientWidth || (card ? card.clientWidth : 0));
+            const cssHeight = Math.round(rect.height || canvas.clientHeight || (card ? card.clientHeight : 0));
+            if (!cssWidth || !cssHeight) {
               if (attempt < 8) {
                 requestAnimationFrame(() => this.setupScratchCanvas(attempt + 1));
               }
@@ -1599,8 +1614,6 @@
             }
 
             const dpr = Math.min(window.devicePixelRatio || 1, 2);
-            const cssWidth = Math.round(rect.width);
-            const cssHeight = Math.round(rect.height);
             canvas.width = cssWidth * dpr;
             canvas.height = cssHeight * dpr;
 
@@ -1654,15 +1667,19 @@
             if (!canvas || !this.scratchCanvasCtx) return;
 
             this.scratchIsDrawing = true;
-            this.scratchPointerId = event.pointerId;
+            this.scratchPointerId = event.pointerId ?? null;
             this.scratchLastPoint = null;
-            if (canvas.setPointerCapture) canvas.setPointerCapture(event.pointerId);
+            if (canvas.setPointerCapture && event.pointerId !== undefined) {
+              try {
+                canvas.setPointerCapture(event.pointerId);
+              } catch (err) {}
+            }
             this.eraseScratchAt(event);
           },
 
           moveScratch(event) {
             if (!this.scratchIsDrawing) return;
-            if (event.pointerId !== this.scratchPointerId) return;
+            if (event.pointerId !== undefined && this.scratchPointerId !== null && event.pointerId !== this.scratchPointerId) return;
 
             this.eraseScratchAt(event);
             this.scratchMoveCount++;
@@ -1670,10 +1687,11 @@
           },
 
           endScratch(event) {
-            if (event.pointerId !== this.scratchPointerId) return;
+            if (!this.scratchIsDrawing) return;
+            if (event.pointerId !== undefined && this.scratchPointerId !== null && event.pointerId !== this.scratchPointerId) return;
 
             const canvas = this.$refs.scratchCanvas;
-            if (canvas && canvas.releasePointerCapture) {
+            if (canvas && canvas.releasePointerCapture && event.pointerId !== undefined) {
               try {
                 canvas.releasePointerCapture(event.pointerId);
               } catch (err) {}
@@ -1716,9 +1734,16 @@
             if (!canvas) return null;
 
             const rect = canvas.getBoundingClientRect();
+            const touch = event.touches && event.touches[0]
+              ? event.touches[0]
+              : event.changedTouches && event.changedTouches[0]
+                ? event.changedTouches[0]
+                : event;
+            if (touch.clientX === undefined || touch.clientY === undefined) return null;
+
             return {
-              x: event.clientX - rect.left,
-              y: event.clientY - rect.top,
+              x: touch.clientX - rect.left,
+              y: touch.clientY - rect.top,
             };
           },
 
