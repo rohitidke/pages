@@ -99,3 +99,24 @@ Do not commit `.env` or `private/`.
 
 This is strong content obfuscation for static hosting, not true server-side access control.
 Anyone with the correct pattern can decrypt, and screenshots or manual re-sharing cannot be prevented.
+
+## Optional: Local Instagram-Style Upload Form
+
+If you want a simpler workflow, run:
+
+```bash
+python3 tools/local_uploader.py
+```
+
+Then open:
+
+```text
+http://127.0.0.1:8787
+```
+
+On submit, it will:
+
+- Save uploaded images into `private/media/stories/` or `private/media/posts/`
+- Name files using ID convention like `s2-1.jpg`, `p3-1.png`
+- Append a new story/post entry in `private/profile-source.json`
+- Automatically run `python3 tools/build_profile.py`
