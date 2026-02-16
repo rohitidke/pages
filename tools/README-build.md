@@ -28,15 +28,28 @@ Expected source schema:
     "avatar": "avatar.jpg"
   },
   "stories": [
-    { "id": "s1", "title": "Travel", "media": "stories/travel.jpg", "caption": "Somewhere nice" }
+    {
+      "id": "s1",
+      "title": "Travel",
+      "media": ["stories/travel-1.jpg", "stories/travel-2.jpg"],
+      "caption": "Somewhere nice"
+    }
   ],
   "posts": [
-    { "id": "p1", "media": "posts/post1.jpg", "caption": "First post", "date": "2026-02-16" }
+    {
+      "id": "p1",
+      "media": ["posts/post1.jpg", "posts/post2.jpg"],
+      "caption": "First post",
+      "date": "2026-02-16"
+    }
   ]
 }
 ```
 
 All media paths are relative to `private/media/`.
+`media` can be either:
+- A single string path (single image), or
+- An array of string paths (multi-image story/post).
 
 ## 2) Set Pattern Secret Locally
 

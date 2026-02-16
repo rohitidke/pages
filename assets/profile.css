@@ -426,6 +426,22 @@ h1 {
   letter-spacing: 0.06em;
 }
 
+.story-index,
+.post-index {
+  margin: 6px 0 0;
+  font-family: "IBM Plex Mono", monospace;
+  font-size: 0.74rem;
+  letter-spacing: 0.04em;
+}
+
+.story-index {
+  color: #94a3b8;
+}
+
+.post-index {
+  color: #64748b;
+}
+
 .story-caption,
 .post-caption {
   margin: 6px 0 0;
@@ -455,12 +471,21 @@ h1 {
   z-index: 2;
 }
 
+.nav-btn[disabled] {
+  opacity: 0.3;
+  cursor: not-allowed;
+}
+
 .nav-prev {
   left: 8px;
 }
 
 .nav-next {
   right: 8px;
+}
+
+.post-shell .nav-btn {
+  background: rgba(2, 6, 23, 0.55);
 }
 
 .error-banner {

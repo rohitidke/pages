@@ -49,6 +49,8 @@ def main() -> int:
 
     output_root.mkdir(parents=True, exist_ok=True)
     output_media_root.mkdir(parents=True, exist_ok=True)
+    for stale in output_media_root.glob("*.enc.json"):
+        stale.unlink()
 
     source = read_json(source_path)
     validate_source_schema(source)
@@ -96,13 +98,19 @@ def main() -> int:
         if sid in story_ids:
             fail(f"Duplicate story id: {sid}")
         story_ids.add(sid)
+        story_media_paths = normalize_media_list(story["media"], f"story '{sid}'")
+        story_media_refs = [
+            build_media_ref(path, f"story-{sid}-{idx + 1}")
+            for idx, path in enumerate(story_media_paths)
+        ]
 
         stories.append(
             {
                 "id": sid,
                 "title": story["title"],
                 "caption": story["caption"],
-                "media": build_media_ref(story["media"], f"story-{sid}"),
+                "media": story_media_refs[0],
+                "mediaItems": story_media_refs,
             }
         )
 
@@ -117,13 +125,19 @@ def main() -> int:
         date = post["date"]
         if not DATE_PATTERN.match(date):
             fail(f"Post '{pid}' has invalid date '{date}'. Expected YYYY-MM-DD")
+        post_media_paths = normalize_media_list(post["media"], f"post '{pid}'")
+        post_media_refs = [
+            build_media_ref(path, f"post-{pid}-{idx + 1}")
+            for idx, path in enumerate(post_media_paths)
+        ]
 
         posts.append(
             {
                 "id": pid,
                 "caption": post["caption"],
                 "date": date,
-                "media": build_media_ref(post["media"], f"post-{pid}"),
+                "media": post_media_refs[0],
+                "mediaItems": post_media_refs,
             }
         )
 
@@ -236,16 +250,39 @@ def validate_source_schema(source: dict[str, Any]) -> None:
     for idx, story in enumerate(source["stories"]):
         if not isinstance(story, dict):
             fail(f"Story at index {idx} must be an object")
-        for key in ["id", "title", "media", "caption"]:
+        for key in ["id", "title", "caption"]:
             if not isinstance(story.get(key), str) or not story[key].strip():
                 fail(f"Story index {idx} field '{key}' must be a non-empty string")
+        normalize_media_list(story.get("media"), f"story index {idx}")
 
     for idx, post in enumerate(source["posts"]):
         if not isinstance(post, dict):
             fail(f"Post at index {idx} must be an object")
-        for key in ["id", "media", "caption", "date"]:
+        for key in ["id", "caption", "date"]:
             if not isinstance(post.get(key), str) or not post[key].strip():
                 fail(f"Post index {idx} field '{key}' must be a non-empty string")
+        normalize_media_list(post.get("media"), f"post index {idx}")
+
+
+def normalize_media_list(raw_media: Any, context: str) -> list[str]:
+    if isinstance(raw_media, str):
+        value = raw_media.strip()
+        if not value:
+            fail(f"{context} media must not be empty")
+        return [value]
+
+    if isinstance(raw_media, list):
+        if not raw_media:
+            fail(f"{context} media list must contain at least one file path")
+
+        values: list[str] = []
+        for idx, item in enumerate(raw_media):
+            if not isinstance(item, str) or not item.strip():
+                fail(f"{context} media[{idx}] must be a non-empty string path")
+            values.append(item.strip())
+        return values
+
+    fail(f"{context} media must be a string or a non-empty array of strings")
 
 
 def resolve_media_file(media_root: Path, relative_media_path: str) -> Path:

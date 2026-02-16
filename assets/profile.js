@@ -25,7 +25,9 @@
     profileData: null,
     mediaUrls: new Map(),
     currentStoryIndex: 0,
+    currentStoryMediaIndex: 0,
     currentPostIndex: 0,
+    currentPostMediaIndex: 0,
   };
 
   const el = {};
@@ -66,6 +68,7 @@
     el.storyModal = document.getElementById("story-modal");
     el.storyImage = document.getElementById("story-image");
     el.storyTitle = document.getElementById("story-title");
+    el.storyIndex = document.getElementById("story-index");
     el.storyCaption = document.getElementById("story-caption");
     el.storyPrev = document.getElementById("story-prev");
     el.storyNext = document.getElementById("story-next");
@@ -74,7 +77,10 @@
     el.postModal = document.getElementById("post-modal");
     el.postImage = document.getElementById("post-image");
     el.postCaption = document.getElementById("post-caption");
+    el.postIndex = document.getElementById("post-index");
     el.postDate = document.getElementById("post-date");
+    el.postPrev = document.getElementById("post-prev");
+    el.postNext = document.getElementById("post-next");
     el.postClose = document.getElementById("close-post");
 
     el.errorBanner = document.getElementById("error-banner");
@@ -101,6 +107,8 @@
     el.storyPrev.addEventListener("click", () => shiftStory(-1));
     el.storyNext.addEventListener("click", () => shiftStory(1));
     el.storyClose.addEventListener("click", closeStoryModal);
+    el.postPrev.addEventListener("click", () => shiftPostMedia(-1));
+    el.postNext.addEventListener("click", () => shiftPostMedia(1));
     el.postClose.addEventListener("click", closePostModal);
 
     document.querySelectorAll(".modal-backdrop").forEach((backdrop) => {
@@ -403,9 +411,29 @@
     }
 
     const avatar = manifest.profile.avatar;
-    if (!avatar || typeof avatar.file !== "string") {
+    if (!isMediaRef(avatar)) {
       throw makeError("SETUP_INVALID", "Manifest avatar media is missing.");
     }
+
+    manifest.stories.forEach((story, index) => {
+      if (!story || typeof story !== "object") {
+        throw makeError("SETUP_INVALID", `Story ${index + 1} is malformed.`);
+      }
+      const items = normalizeMediaItems(story);
+      if (!items.length) {
+        throw makeError("SETUP_INVALID", `Story ${index + 1} has no media.`);
+      }
+    });
+
+    manifest.posts.forEach((post, index) => {
+      if (!post || typeof post !== "object") {
+        throw makeError("SETUP_INVALID", `Post ${index + 1} is malformed.`);
+      }
+      const items = normalizeMediaItems(post);
+      if (!items.length) {
+        throw makeError("SETUP_INVALID", `Post ${index + 1} has no media.`);
+      }
+    });
   }
 
   async function decryptMediaFiles(manifest, pattern) {
@@ -433,15 +461,11 @@
     refs.push(manifest.profile.avatar);
 
     manifest.stories.forEach((story) => {
-      if (story && story.media && typeof story.media.file === "string") {
-        refs.push(story.media);
-      }
+      refs.push(...normalizeMediaItems(story));
     });
 
     manifest.posts.forEach((post) => {
-      if (post && post.media && typeof post.media.file === "string") {
-        refs.push(post.media);
-      }
+      refs.push(...normalizeMediaItems(post));
     });
 
     return refs;
@@ -451,12 +475,47 @@
     manifest.profile.avatar.src = mediaMap.get(manifest.profile.avatar.file) || "";
 
     manifest.stories.forEach((story) => {
-      story.media.src = mediaMap.get(story.media.file) || "";
+      const items = normalizeMediaItems(story);
+      items.forEach((item) => {
+        item.src = mediaMap.get(item.file) || "";
+      });
+      story.mediaItems = items;
+      story.media = items[0];
     });
 
     manifest.posts.forEach((post) => {
-      post.media.src = mediaMap.get(post.media.file) || "";
+      const items = normalizeMediaItems(post);
+      items.forEach((item) => {
+        item.src = mediaMap.get(item.file) || "";
+      });
+      post.mediaItems = items;
+      post.media = items[0];
     });
+  }
+
+  function normalizeMediaItems(entity) {
+    if (!entity || typeof entity !== "object") {
+      return [];
+    }
+
+    const refs = [];
+    if (Array.isArray(entity.mediaItems)) {
+      entity.mediaItems.forEach((entry) => {
+        if (isMediaRef(entry)) {
+          refs.push(entry);
+        }
+      });
+    }
+
+    if (!refs.length && isMediaRef(entity.media)) {
+      refs.push(entity.media);
+    }
+
+    return refs;
+  }
+
+  function isMediaRef(value) {
+    return Boolean(value && typeof value === "object" && typeof value.file === "string");
   }
 
   function renderProfile(manifest) {
@@ -482,6 +541,12 @@
     }
 
     stories.forEach((story, index) => {
+      const mediaItems = normalizeMediaItems(story);
+      const cover = mediaItems[0];
+      if (!cover || !cover.src) {
+        return;
+      }
+
       const button = document.createElement("button");
       button.className = "story-chip";
       button.type = "button";
@@ -491,7 +556,7 @@
       wrap.className = "story-thumb-wrap";
       const img = document.createElement("img");
       img.className = "story-thumb";
-      img.src = story.media.src;
+      img.src = cover.src;
       img.alt = story.title || "Story";
       wrap.appendChild(img);
 
@@ -517,13 +582,19 @@
     }
 
     posts.forEach((post, index) => {
+      const mediaItems = normalizeMediaItems(post);
+      const cover = mediaItems[0];
+      if (!cover || !cover.src) {
+        return;
+      }
+
       const button = document.createElement("button");
       button.className = "post-tile";
       button.type = "button";
       button.setAttribute("aria-label", `Open post ${index + 1}`);
 
       const img = document.createElement("img");
-      img.src = post.media.src;
+      img.src = cover.src;
       img.alt = post.caption || `Post ${index + 1}`;
 
       button.appendChild(img);
@@ -537,6 +608,7 @@
       return;
     }
     state.currentStoryIndex = index;
+    state.currentStoryMediaIndex = 0;
     renderStorySlide();
     el.storyModal.classList.remove("hidden");
     el.storyModal.setAttribute("aria-hidden", "false");
@@ -549,9 +621,21 @@
       return;
     }
 
-    el.storyImage.src = story.media.src;
+    const mediaItems = normalizeMediaItems(story);
+    if (!mediaItems.length) {
+      return;
+    }
+
+    const safeMediaIndex = clampIndex(state.currentStoryMediaIndex, mediaItems.length);
+    state.currentStoryMediaIndex = safeMediaIndex;
+    const media = mediaItems[safeMediaIndex];
+    const storyPosition = state.currentStoryIndex + 1;
+
+    el.storyImage.src = media.src || "";
     el.storyImage.alt = story.title || "Story";
     el.storyTitle.textContent = story.title || "Story";
+    el.storyIndex.textContent =
+      `Story ${storyPosition}/${stories.length} • Photo ${safeMediaIndex + 1}/${mediaItems.length}`;
     el.storyCaption.textContent = story.caption || "";
   }
 
@@ -559,9 +643,40 @@
     if (!state.profileData || !state.profileData.stories.length) {
       return;
     }
-    const total = state.profileData.stories.length;
-    state.currentStoryIndex = (state.currentStoryIndex + delta + total) % total;
-    renderStorySlide();
+
+    const stories = state.profileData.stories;
+    let storyIndex = state.currentStoryIndex;
+    let mediaIndex = state.currentStoryMediaIndex + delta;
+    let safety = 0;
+
+    while (safety < stories.length * 2) {
+      const items = normalizeMediaItems(stories[storyIndex]);
+      if (!items.length) {
+        storyIndex = (storyIndex + (delta >= 0 ? 1 : -1) + stories.length) % stories.length;
+        mediaIndex = delta >= 0 ? 0 : -1;
+        safety += 1;
+        continue;
+      }
+
+      if (mediaIndex < 0) {
+        storyIndex = (storyIndex - 1 + stories.length) % stories.length;
+        mediaIndex = normalizeMediaItems(stories[storyIndex]).length - 1;
+        safety += 1;
+        continue;
+      }
+
+      if (mediaIndex >= items.length) {
+        storyIndex = (storyIndex + 1) % stories.length;
+        mediaIndex = 0;
+        safety += 1;
+        continue;
+      }
+
+      state.currentStoryIndex = storyIndex;
+      state.currentStoryMediaIndex = mediaIndex;
+      renderStorySlide();
+      return;
+    }
   }
 
   function closeStoryModal() {
@@ -575,14 +690,57 @@
     }
 
     state.currentPostIndex = index;
-    const post = state.profileData.posts[index];
-    el.postImage.src = post.media.src;
-    el.postImage.alt = post.caption || "Post";
-    el.postCaption.textContent = post.caption || "";
-    el.postDate.textContent = post.date || "";
+    state.currentPostMediaIndex = 0;
+    renderPostSlide();
 
     el.postModal.classList.remove("hidden");
     el.postModal.setAttribute("aria-hidden", "false");
+  }
+
+  function renderPostSlide() {
+    if (!state.profileData || !state.profileData.posts.length) {
+      return;
+    }
+
+    const post = state.profileData.posts[state.currentPostIndex];
+    if (!post) {
+      return;
+    }
+
+    const mediaItems = normalizeMediaItems(post);
+    if (!mediaItems.length) {
+      return;
+    }
+
+    const safeMediaIndex = clampIndex(state.currentPostMediaIndex, mediaItems.length);
+    state.currentPostMediaIndex = safeMediaIndex;
+    const media = mediaItems[safeMediaIndex];
+
+    el.postImage.src = media.src || "";
+    el.postImage.alt = post.caption || "Post";
+    el.postCaption.textContent = post.caption || "";
+    el.postIndex.textContent = `Photo ${safeMediaIndex + 1}/${mediaItems.length}`;
+    el.postDate.textContent = post.date || "";
+    el.postPrev.disabled = mediaItems.length <= 1;
+    el.postNext.disabled = mediaItems.length <= 1;
+  }
+
+  function shiftPostMedia(delta) {
+    if (!state.profileData || !state.profileData.posts.length) {
+      return;
+    }
+    const post = state.profileData.posts[state.currentPostIndex];
+    if (!post) {
+      return;
+    }
+    const mediaItems = normalizeMediaItems(post);
+    if (mediaItems.length <= 1) {
+      return;
+    }
+
+    state.currentPostMediaIndex =
+      (state.currentPostMediaIndex + delta + mediaItems.length) % mediaItems.length;
+    renderPostSlide();
   }
 
   function closePostModal() {
@@ -594,6 +752,16 @@
     if (event.key === "Escape") {
       closeStoryModal();
       closePostModal();
+      return;
+    }
+
+    if (!el.postModal.classList.contains("hidden")) {
+      if (event.key === "ArrowRight") {
+        shiftPostMedia(1);
+      }
+      if (event.key === "ArrowLeft") {
+        shiftPostMedia(-1);
+      }
       return;
     }
 
@@ -837,6 +1005,19 @@
       bytes[i] = binary.charCodeAt(i);
     }
     return bytes;
+  }
+
+  function clampIndex(index, length) {
+    if (!Number.isInteger(index) || length <= 0) {
+      return 0;
+    }
+    if (index < 0) {
+      return 0;
+    }
+    if (index >= length) {
+      return length - 1;
+    }
+    return index;
   }
 
   function makeError(code, message) {
