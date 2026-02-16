@@ -1,0 +1,119 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Private Profile</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500&display=swap"
+      rel="stylesheet"
+    />
+    <link rel="stylesheet" href="assets/profile.css" />
+  </head>
+  <body>
+    <main id="app">
+      <section id="lock-screen" class="screen">
+        <div class="lock-card">
+          <p class="eyebrow">Private Access</p>
+          <h1>Draw Your Pattern</h1>
+          <p class="subtitle">Your profile will unlock only after the correct 3x3 pattern.</p>
+
+          <div id="pattern-area" class="pattern-area" aria-label="Pattern lock">
+            <svg id="pattern-svg" class="pattern-svg" viewBox="0 0 300 300" aria-hidden="true">
+              <polyline id="pattern-path" points="" />
+            </svg>
+            <div class="pattern-grid" role="application" aria-label="Pattern grid">
+              <button class="pattern-dot" data-index="1" aria-label="Dot 1"></button>
+              <button class="pattern-dot" data-index="2" aria-label="Dot 2"></button>
+              <button class="pattern-dot" data-index="3" aria-label="Dot 3"></button>
+              <button class="pattern-dot" data-index="4" aria-label="Dot 4"></button>
+              <button class="pattern-dot" data-index="5" aria-label="Dot 5"></button>
+              <button class="pattern-dot" data-index="6" aria-label="Dot 6"></button>
+              <button class="pattern-dot" data-index="7" aria-label="Dot 7"></button>
+              <button class="pattern-dot" data-index="8" aria-label="Dot 8"></button>
+              <button class="pattern-dot" data-index="9" aria-label="Dot 9"></button>
+            </div>
+          </div>
+
+          <p id="lock-status" class="lock-status">Loading encrypted manifest...</p>
+          <div class="lock-controls">
+            <button id="clear-pattern" class="text-btn" type="button">Clear</button>
+            <span id="delay-timer" class="delay-timer"></span>
+          </div>
+          <p class="lock-note">
+            Tip: Keep your pattern in local <code>.env</code> as <code>PROFILE_PATTERN</code>, using dot numbers like
+            <code>1-2-5-8</code>.
+          </p>
+        </div>
+      </section>
+
+      <section id="loading-screen" class="screen hidden">
+        <div class="loader-wrap">
+          <div class="spinner" aria-hidden="true"></div>
+          <p id="loading-text">Decrypting profile...</p>
+        </div>
+      </section>
+
+      <section id="profile-screen" class="screen hidden">
+        <div class="phone-shell">
+          <header class="profile-header">
+            <div class="profile-top">
+              <h2 id="username">@username</h2>
+              <span class="badge">private</span>
+            </div>
+
+            <div class="identity">
+              <img id="avatar" class="avatar" alt="Profile photo" />
+              <div class="identity-text">
+                <h3 id="display-name">Display Name</h3>
+                <p id="bio">Bio goes here.</p>
+              </div>
+            </div>
+          </header>
+
+          <section class="stories-section">
+            <h4>Stories</h4>
+            <div id="stories-track" class="stories-track"></div>
+          </section>
+
+          <section class="posts-section">
+            <h4>Posts</h4>
+            <div id="posts-grid" class="posts-grid"></div>
+          </section>
+        </div>
+      </section>
+
+      <div id="story-modal" class="modal hidden" aria-hidden="true" role="dialog" aria-label="Story viewer">
+        <div class="modal-backdrop" data-close="story"></div>
+        <div class="modal-shell story-shell">
+          <button id="close-story" class="close-btn" type="button" aria-label="Close story">x</button>
+          <button id="story-prev" class="nav-btn nav-prev" type="button" aria-label="Previous story"><</button>
+          <button id="story-next" class="nav-btn nav-next" type="button" aria-label="Next story">></button>
+          <img id="story-image" class="story-image" alt="Story" />
+          <div class="story-meta">
+            <p id="story-title" class="story-title"></p>
+            <p id="story-caption" class="story-caption"></p>
+          </div>
+        </div>
+      </div>
+
+      <div id="post-modal" class="modal hidden" aria-hidden="true" role="dialog" aria-label="Post viewer">
+        <div class="modal-backdrop" data-close="post"></div>
+        <div class="modal-shell post-shell">
+          <button id="close-post" class="close-btn" type="button" aria-label="Close post">x</button>
+          <img id="post-image" class="post-image" alt="Post" />
+          <div class="post-meta">
+            <p id="post-caption" class="post-caption"></p>
+            <p id="post-date" class="post-date"></p>
+          </div>
+        </div>
+      </div>
+
+      <div id="error-banner" class="error-banner hidden" role="alert"></div>
+    </main>
+
+    <script src="assets/profile.js" defer></script>
+  </body>
+</html>
