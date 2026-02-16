@@ -120,3 +120,16 @@ On submit, it will:
 - Name files using ID convention like `s2-1.jpg`, `p3-1.png`
 - Append a new story/post entry in `private/profile-source.json`
 - Automatically run `python3 tools/build_profile.py`
+
+If `private/` is missing or incomplete on a new machine, uploader auto-recovers it from:
+
+- `data/manifest.enc.json`
+- `data/media/*.enc.json`
+
+using your local `PROFILE_PATTERN`.
+
+You can run recovery only (no server) with:
+
+```bash
+python3 tools/local_uploader.py --recover-only
+```
