@@ -4,8 +4,8 @@
   const CONFIG = {
     manifestPath: "data/manifest.enc.json",
     minPatternLength: 4,
-    baseDelayMs: 500,
-    maxDelayMs: 30000,
+    baseDelayMs: 10000,
+    maxDelayMs: 100000,
     lockTickMs: 100,
     alg: "AES-CBC+HMAC-SHA256",
   };

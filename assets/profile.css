@@ -176,21 +176,6 @@ h1 {
   color: #475569;
 }
 
-.lock-note {
-  margin: 14px 0 0;
-  font-size: 0.82rem;
-  color: #64748b;
-  line-height: 1.4;
-}
-
-.lock-note code {
-  font-family: "IBM Plex Mono", monospace;
-  background: #e2e8f0;
-  color: #0f172a;
-  border-radius: 6px;
-  padding: 1px 4px;
-}
-
 .loader-wrap {
   padding: 40px 20px;
   text-align: center;
